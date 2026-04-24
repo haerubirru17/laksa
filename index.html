@@ -297,7 +297,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 .dash-avatar:hover .dash-avatar-inner{box-shadow:0 0 0 2.5px rgba(255,255,255,.92),0 0 0 5.5px rgba(37,99,235,.32),0 8px 24px rgba(37,99,235,.32)}
 .dash-avatar img{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%}
 .dash-avatar-initials{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:.92rem;font-weight:800;color:#fff;letter-spacing:-.02em;border-radius:50%}
-.dash-avatar-dropdown{position:absolute;top:calc(100% + 10px);right:0;background:rgba(15,23,42,.96);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.1);border-radius:11px;padding:.3rem;min-width:168px;opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity .18s,transform .18s;z-index:999;box-shadow:0 8px 32px rgba(0,0,0,.28)}
+.dash-avatar-dropdown{position:absolute;top:calc(100% + 10px);right:0;background:rgba(15,23,42,.96);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.1);border-radius:11px;padding:.3rem;min-width:168px;opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity .18s,transform .18s;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,.28);width:max-content}
 .dash-avatar-dropdown.open{opacity:1;pointer-events:all;transform:translateY(0)}
 .dash-avatar-dropdown-item{display:flex;align-items:center;gap:.55rem;width:100%;padding:.52rem .72rem;border:none;background:none;color:#fff;font-size:.78rem;font-family:'JetBrains Mono',monospace;letter-spacing:.03em;cursor:pointer;border-radius:8px;transition:background .14s;text-align:left;white-space:nowrap}
 .dash-avatar-dropdown-item:hover{background:rgba(255,255,255,.08)}
@@ -1118,12 +1118,14 @@ html[data-theme="dark"] .acc-tab.active{background:rgba(37,99,235,.2);color:var(
       <span class="dash-greeting-time" id="dashGreetTime">Selamat pagi</span>
       <span class="dash-greeting-name" id="dashGreetName">—</span>
     </div>
-    <button class="dash-profile-btn" onclick="toggleAvatarDropdown(event)" title="Profil">
-      <div class="dash-avatar" id="dashAvatar">
-        <div class="dash-avatar-inner">
-          <div class="dash-avatar-initials" id="dashAvatarInitials" style="background:linear-gradient(135deg,#2563eb,#0ea5e9)">?</div>
+    <div style="position:relative;flex-shrink:0">
+      <button class="dash-profile-btn" onclick="toggleAvatarDropdown(event)" title="Profil">
+        <div class="dash-avatar" id="dashAvatar">
+          <div class="dash-avatar-inner">
+            <div class="dash-avatar-initials" id="dashAvatarInitials" style="background:linear-gradient(135deg,#2563eb,#0ea5e9)">?</div>
+          </div>
         </div>
-      </div>
+      </button>
       <div class="dash-avatar-dropdown" id="avatarDropdown">
         <button class="dash-avatar-dropdown-item" onclick="triggerAvatarUpload(event)">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
@@ -1135,7 +1137,7 @@ html[data-theme="dark"] .acc-tab.active{background:rgba(37,99,235,.2);color:var(
           Logout / Ganti Akun
         </button>
       </div>
-    </button>
+    </div>
   </div>
   <input type="file" id="avatarInput" accept="image/*" onchange="handleAvatarUpload(event)"/>
 </div>
