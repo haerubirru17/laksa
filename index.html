@@ -93,7 +93,7 @@ html[data-theme="dark"] .flbl{color:var(--ink2)}
 html[data-theme="dark"] .dash-greeting-time{color:var(--ink3)}
 html[data-theme="dark"] .dash-greeting-name{color:var(--ink)}
 html[data-theme="dark"] .dash-avatar-inner{box-shadow:0 0 0 2px rgba(255,255,255,.15),0 0 0 4.5px rgba(37,99,235,.25),0 6px 18px rgba(0,0,0,.4)}
-html[data-theme="dark"] .dash-avatar-hint{background:rgba(5,10,24,.96);border-color:rgba(255,255,255,.08)}
+
 html[data-theme="dark"] .btn2{color:var(--ink2);border-color:var(--gs-border)}
 html[data-theme="dark"] .btn2:hover{background:var(--gs-2);color:var(--ink)}
 html[data-theme="dark"] .tgl{color:var(--ink3)}
@@ -297,8 +297,14 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 .dash-avatar:hover .dash-avatar-inner{box-shadow:0 0 0 2.5px rgba(255,255,255,.92),0 0 0 5.5px rgba(37,99,235,.32),0 8px 24px rgba(37,99,235,.32)}
 .dash-avatar img{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%}
 .dash-avatar-initials{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:.92rem;font-weight:800;color:#fff;letter-spacing:-.02em;border-radius:50%}
-.dash-avatar-hint{position:absolute;top:calc(100% + 8px);right:0;background:rgba(15,23,42,.92);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:.38rem .65rem;font-size:.64rem;color:#fff;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .18s;font-family:'JetBrains Mono',monospace;letter-spacing:.04em}
-.dash-profile-btn:hover .dash-avatar-hint{opacity:1}
+.dash-avatar-dropdown{position:absolute;top:calc(100% + 10px);right:0;background:rgba(15,23,42,.96);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.1);border-radius:11px;padding:.3rem;min-width:168px;opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity .18s,transform .18s;z-index:999;box-shadow:0 8px 32px rgba(0,0,0,.28)}
+.dash-avatar-dropdown.open{opacity:1;pointer-events:all;transform:translateY(0)}
+.dash-avatar-dropdown-item{display:flex;align-items:center;gap:.55rem;width:100%;padding:.52rem .72rem;border:none;background:none;color:#fff;font-size:.78rem;font-family:'JetBrains Mono',monospace;letter-spacing:.03em;cursor:pointer;border-radius:8px;transition:background .14s;text-align:left;white-space:nowrap}
+.dash-avatar-dropdown-item:hover{background:rgba(255,255,255,.08)}
+.dash-avatar-dropdown-item.danger{color:#f87171}
+.dash-avatar-dropdown-item.danger:hover{background:rgba(248,113,113,.1)}
+.dash-avatar-dropdown-sep{height:1px;background:rgba(255,255,255,.08);margin:.25rem .5rem}
+html[data-theme="dark"] .dash-avatar-dropdown{background:rgba(5,10,24,.97)}
 #avatarInput{display:none}
 @media(min-width:769px){
   .dash-avatar{width:48px;height:48px}
@@ -1112,13 +1118,23 @@ html[data-theme="dark"] .acc-tab.active{background:rgba(37,99,235,.2);color:var(
       <span class="dash-greeting-time" id="dashGreetTime">Selamat pagi</span>
       <span class="dash-greeting-name" id="dashGreetName">—</span>
     </div>
-    <button class="dash-profile-btn" onclick="document.getElementById('avatarInput').click()" title="Ganti foto profil">
+    <button class="dash-profile-btn" onclick="toggleAvatarDropdown(event)" title="Profil">
       <div class="dash-avatar" id="dashAvatar">
         <div class="dash-avatar-inner">
           <div class="dash-avatar-initials" id="dashAvatarInitials" style="background:linear-gradient(135deg,#2563eb,#0ea5e9)">?</div>
         </div>
       </div>
-      <span class="dash-avatar-hint">Ganti foto</span>
+      <div class="dash-avatar-dropdown" id="avatarDropdown">
+        <button class="dash-avatar-dropdown-item" onclick="triggerAvatarUpload(event)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Ganti Foto Profil
+        </button>
+        <div class="dash-avatar-dropdown-sep"></div>
+        <button class="dash-avatar-dropdown-item danger" onclick="logoutAkun(event)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Logout / Ganti Akun
+        </button>
+      </div>
     </button>
   </div>
   <input type="file" id="avatarInput" accept="image/*" onchange="handleAvatarUpload(event)"/>
@@ -1835,6 +1851,41 @@ function renderDashAvatar(){
     inner.innerHTML=`<div class="dash-avatar-initials" id="dashAvatarInitials" style="background:${grad}">${initial}</div>`;
   }
 }
+
+function toggleAvatarDropdown(e){
+  e.stopPropagation();
+  const dd=document.getElementById('avatarDropdown');
+  if(!dd)return;
+  const isOpen=dd.classList.contains('open');
+  closeAvatarDropdown();
+  if(!isOpen)dd.classList.add('open');
+}
+function closeAvatarDropdown(){
+  const dd=document.getElementById('avatarDropdown');
+  if(dd)dd.classList.remove('open');
+}
+function triggerAvatarUpload(e){
+  e.stopPropagation();
+  closeAvatarDropdown();
+  document.getElementById('avatarInput').click();
+}
+function logoutAkun(e){
+  e.stopPropagation();
+  closeAvatarDropdown();
+  if(!confirm('Logout dan ganti akun? Anda perlu isi ulang nama & Telegram ID.\n\nData keuangan di server tetap aman.'))return;
+  // Hapus identitas lokal
+  localStorage.removeItem('laksa_profile');
+  localStorage.removeItem('laksa_avatar');
+  // Hapus cache data lokal agar tidak bocor ke akun berikutnya
+  const K_KEYS=['ft_tx','ft_bud','ft_goals','ft_acc','ft_cats','ft_set','ft_rec'];
+  K_KEYS.forEach(k=>localStorage.removeItem(k));
+  location.reload();
+}
+// Tutup dropdown saat klik di luar
+document.addEventListener('click',function(e){
+  const btn=e.target.closest('.dash-profile-btn');
+  if(!btn)closeAvatarDropdown();
+});
 
 function handleAvatarUpload(event){
   const file=event.target.files[0];
