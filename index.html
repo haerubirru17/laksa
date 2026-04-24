@@ -2645,7 +2645,7 @@ function showRRes(data){
   cEl.style.color=data.confidence==='high'?'var(--income)':data.confidence==='medium'?'var(--gold)':'var(--expense)';
   el('rSumGrid').innerHTML=[
     ...(data.discount>0?[{l:'Diskon',v:'− '+fCur(data.discount)}]:[]),
-    {l:'Kembalian',v:fCur(data.change||0)},
+    ...(data.change>0?[{l:'Kembalian',v:fCur(data.change)}]:[]),
     {l:'Total Pembayaran',v:fCur(data.total||0),full:true}
   ].map(i=>`<div class="sbox ${i.full?'total':''}"><div class="sbox-lbl">${i.l}</div><div class="sbox-val">${i.v}</div></div>`).join('');
   const items=data.items||[];
@@ -2744,6 +2744,7 @@ async function doScan(){
       discount:parsed.discount||0,
       tax:parsed.tax||0,
       total:parsed.total||parsed.amount||0,
+      change:parsed.change||0,
       confidence:parsed.confidence||'medium',
       raw_text:JSON.stringify(parsed,null,2)
     };
