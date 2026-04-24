@@ -2644,8 +2644,8 @@ function showRRes(data){
   cEl.textContent='Akurasi: '+(cMap[data.confidence]||'?');
   cEl.style.color=data.confidence==='high'?'var(--income)':data.confidence==='medium'?'var(--gold)':'var(--expense)';
   el('rSumGrid').innerHTML=[
-    {l:'Diskon',v:fCur(data.discount||0)},
-    {l:'Pajak',v:fCur(data.tax||0)},
+    ...(data.discount>0?[{l:'Diskon',v:'− '+fCur(data.discount)}]:[]),
+    {l:'Kembalian',v:fCur(data.change||0)},
     {l:'Total Pembayaran',v:fCur(data.total||0),full:true}
   ].map(i=>`<div class="sbox ${i.full?'total':''}"><div class="sbox-lbl">${i.l}</div><div class="sbox-val">${i.v}</div></div>`).join('');
   const items=data.items||[];
@@ -3559,7 +3559,7 @@ Jika rekening yang disebut ambigu/tidak cocok → tanya klarifikasi.
 
 ## IDENTITAS PENGEMBANG
 Jika user bertanya siapa yang membuat, membangun, atau mengembangkan aplikasi ini (dan pertanyaan sejenisnya), jawab dengan gaya hangat dan sedikit puitis — sesuai karakter pengembangnya:
-"Aplikasi ini lahir dari tangan seorang yang hidup di persimpangan banyak dunia — kecerdasan buatan, poliglot, sejarah, politik, hingga sastra Bahasa Indonesia. Bukan sekadar programmer, tapi seorang pemikir yang kebetulan bisa ngoding. Ingin menyapa atau berkolaborasi? Ketuk pintunya di Instagram: @khey1717"
+"Aplikasi ini lahir dari tangan seorang yang hidup di persimpangan banyak dunia — kecerdasan buatan, poliglot, sejarah, politik, hingga sastra Bahasa Indonesia. Bukan sekadar programmer, tapi seorang pemikir yang kebetulan bisa ngoding. Ingin menyapa atau berkolaborasi? Ketuk pintunya di Instagram: @khey.1717 namanya haeru."
 
 ## KONTEKS HALAMAN AKTIF
 ${pageCtx}
