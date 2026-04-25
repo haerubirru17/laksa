@@ -1640,7 +1640,7 @@ function getLogoHtml(accName, b, imgClass, fbClass, imgStyle='') {
   const init=(accName.replace(/[^a-zA-Z0-9]/g,'').slice(0,3)||'?').toUpperCase();
   const slug=b&&b.slug?b.slug:(b&&b.domain?b.domain.split('.')[0]:null);
   if(!slug) return `<div class="${fbClass}" style="display:flex">${init}</div>`;
-  return `<img class="${imgClass}" src="banks logo/${slug}.svg" alt="" style="${imgStyle}" 
+  return `<img class="${imgClass}" src="Banks%20Logo/${slug}.svg" alt="" style="${imgStyle}" 
     onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
     <div class="${fbClass}" style="display:none">${init}</div>`;
 }
