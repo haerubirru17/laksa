@@ -1508,6 +1508,13 @@ const BANKS={
   dana:{color:'#118EEA',c2:'#0d72c0',domain:'dana.id'},
   shopeepay:{color:'#EE4D2D',c2:'#c93b1e',domain:'shopee.co.id'},
   shopee:{color:'#EE4D2D',c2:'#c93b1e',domain:'shopee.co.id',slug:'shopeepay'},
+  hi:{color:'#FF6B35',c2:'#cc5529',domain:'hibank.co.id',slug:'hibank'},
+  hibank:{color:'#FF6B35',c2:'#cc5529',domain:'hibank.co.id'},
+  ntt:{color:'#1A6B3C',c2:'#14542f',domain:'bankntt.co.id'},
+  ina:{color:'#0066B3',c2:'#00518f',domain:'bankina.co.id'},
+  mas:{color:'#003F87',c2:'#00316b',domain:'bankmas.co.id'},
+  bws:{color:'#8B1A1A',c2:'#6e1414',domain:'bfraudws.co.id'},
+  oub:{color:'#003399',c2:'#002277',domain:'bankoub.co.id'},
   tunai:{color:'#34d399',c2:'#10b981',domain:null},
   cash:{color:'#34d399',c2:'#10b981',domain:null},
   dompet:{color:'#5c6ac4',c2:'#4355b9',domain:null,isWallet:true},
@@ -1688,67 +1695,74 @@ const thisMon=()=>today().slice(0,7);
 const esc=(s)=>s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const el=(id)=>document.getElementById(id);
 const uid=()=>'id_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+
+// Daftar semua file SVG yang tersedia di folder Banks Logo
+const SVG_FILES=['aladin','allobank','anz','arthagrahainternasional','bangkokbank','bca','bcadigital','bcasyariah','blu','bni','bnpparibas','bri','bsi','btn','btnsyariah','btpnsyariah','bukopin','bukopinsyariah','bumiartha','bws','capital','ccbindonesia','chinaconstructionbankindonesia','cimbniaga','cimbniagasyariah','citibank','commonwealthbank','creditsuisse','ctbcbank','danamon','danamonsyariah','dbs','deutschebank','dki','ganesha','hanabank','hibank','hsbc','ibkbank','icbc','ina','indexselindo','ingbank','jago','jakarta','jasajakarta','jenius','jpmorganchaseandco','jtrustbank','krombank','linebank','mandiri','mas','maspion','mayora','mega','megasyariah','mestika','mizuho','mncbank','muamalat','mufg','nagari','nanobanksyariah','neo','nobubank','ntbsyariah','ntt','ocbcnisp','ofamerica','ofchina','ofindia','okbank','oub','paninbank','panindubaisyariah','permatabank','primabank','raya','resona','sahabatsampoerna','salutgo','saqu','sbi','seabank','shinhanbank','sinarmas','sinarmassyariah','smbcindonesia','standartcartered','sultra','sumsel','sumut','superbank','victoria','victoriasyariah'];
+
 const detBank=(name)=>{
   let n=(name||'').toLowerCase().trim();
   
-  // 1. Alias pintar (termasuk varian syariah panjang)
-  const aliases = {
-    'central asia syariah': 'bcasyariah',
-    'central asia': 'bca', 
-    'rakyat indonesia': 'bri', 
-    'negara indonesia': 'bni',
-    'syariah indonesia': 'bsi', 
-    'tabungan negara syariah': 'btnsyariah',
-    'tabungan negara': 'btn', 
-    'go-pay': 'gopay',
-    'shopee': 'shopeepay',
-    'neo commerce': 'neo'
+  // 1. Alias untuk nama panjang/resmi yang sangat berbeda dari nama file
+  const aliases={
+    'central asia syariah':'bcasyariah','central asia':'bca',
+    'rakyat indonesia':'bri','negara indonesia':'bni',
+    'syariah indonesia':'bsi','tabungan negara syariah':'btnsyariah',
+    'tabungan negara':'btn','go-pay':'gopay','neo commerce':'neo',
+    'artha bumi':'bumiartha','bumi artha':'bumiartha',
+    'artha graha':'arthagrahainternasional',
+    'china construction':'chinaconstructionbankindonesia',
+    'jpmorgan':'jpmorganchaseandco','standard chartered':'standartcartered',
+    'panin dubai syariah':'panindubaisyariah'
   };
-  let forcedSlug = null;
-  let matchLen = 0;
-  for(let a in aliases) {
-    if(n.includes(a) && a.length > matchLen) {
-      forcedSlug = aliases[a];
-      matchLen = a.length;
-    }
-  }
+  let forcedSlug=null,aLen=0;
+  for(let a in aliases){if(n.includes(a)&&a.length>aLen){forcedSlug=aliases[a];aLen=a.length;}}
 
   // 2. Bersihkan nama
-  const nCleanSpace = n.replace(/\bbank\b/gi,'').trim().replace(/\s+/g,' ');
-  const nClean = nCleanSpace.replace(/[^a-z0-9]/g,'');
+  const nClean=n.replace(/\bbank\b/gi,'').trim().replace(/\s+/g,'').replace(/[^a-z0-9]/g,'');
 
-  if(forcedSlug) {
-     const b = BANKS[forcedSlug] || {color:null, c2:null, domain:forcedSlug+'.co.id'};
-     return {...b, slug: forcedSlug};
+  if(forcedSlug){
+    const b=BANKS[forcedSlug]||{color:null,c2:null,domain:forcedSlug+'.co.id'};
+    return{...b,slug:forcedSlug};
   }
 
-  // 3. Pencarian internal (Cegah bank induk menelan bank syariah)
+  // 3. Cari di BANKS database
   let best=null,bestLen=0,bestK=null;
-  const isSyariah = nClean.includes('syariah');
-  
+  const isSyariah=nClean.includes('syariah');
   for(const[k,b]of Object.entries(BANKS)){
-    const kClean = k.replace(/\bbank\b/g,'').replace(/[^a-z0-9]/g,'');
-    if(!kClean) continue;
-    
-    const exactMatch = (nClean === kClean);
-    const kHasSyariah = kClean.includes('syariah');
-    // Jika user ketik syariah, hanya izinkan partial match jika key juga mengandung syariah
-    // Jika user TIDAK ketik syariah, jangan match key yang mengandung syariah
-    const safePartialMatch = nClean.includes(kClean) && (isSyariah === kHasSyariah);
-    
-    if((exactMatch || safePartialMatch) && kClean.length > bestLen){
-      best=b; bestLen=kClean.length; bestK=kClean;
-    }
+    const kClean=k.replace(/\bbank\b/g,'').replace(/[^a-z0-9]/g,'');
+    if(!kClean)continue;
+    const kHasSyariah=kClean.includes('syariah');
+    const exact=(nClean===kClean);
+    const partial=nClean.includes(kClean)&&(isSyariah===kHasSyariah);
+    if((exact||partial)&&kClean.length>bestLen){best=b;bestLen=kClean.length;bestK=kClean;}
   }
-  if(best) return {...best, slug: best.slug || bestK};
+  if(best)return{...best,slug:best.slug||bestK};
 
-  // 4. Tebakan
-  const isDompet=/dompet|tunai|cash|wallet|kas/i.test(n);
-  if(isDompet)return{color:'#5c6ac4',c2:'#4355b9',domain:null,isWallet:true,slug:nClean};
+  // 4. AUTO-MATCH: cari file SVG terbaik dari daftar 96 file
+  let bestFile=null,bestScore=0;
+  for(const f of SVG_FILES){
+    let score=0;
+    const fStrip=f.replace(/bank/g,''); // versi tanpa "bank"
+    if(nClean===f||nClean===fStrip){score=10000;}
+    else if((f.includes(nClean)||fStrip.includes(nClean))&&nClean.length>=3){score=5000+nClean.length;}
+    else if((nClean.includes(f)||nClean.includes(fStrip))&&f.length>=3&&fStrip.length>=3){
+      const fSy=f.includes('syariah');
+      if(isSyariah===fSy)score=3000+f.length;
+    }
+    if(score>bestScore){bestScore=score;bestFile=f;}
+  }
+  if(bestFile&&bestScore>=3000){
+    const b=BANKS[bestFile]||{color:null,c2:null,domain:bestFile+'.co.id'};
+    return{...b,slug:bestFile};
+  }
 
+  // 5. Dompet/wallet
+  if(/dompet|tunai|cash|wallet|kas/i.test(n))
+    return{color:'#5c6ac4',c2:'#4355b9',domain:null,isWallet:true,slug:nClean};
+
+  // 6. Fallback
   const slug=nClean||'unknown';
-  const guessedDomain=nClean+'.co.id';
-  return{color:null,c2:null,domain:guessedDomain,guessed:true,slug:slug};
+  return{color:null,c2:null,domain:slug+'.co.id',guessed:true,slug:slug};
 };
 
 // ── THEME ──
