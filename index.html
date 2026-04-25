@@ -3444,7 +3444,16 @@ function toggleAiChat(){
       aiHistory.push({role:'assistant',content:`Siap! Sekarang kita di halaman **${pageName}**. Ada yang ingin kamu tanyakan seputar ${pageName.toLowerCase()}?`});
     }
     aiLastPage=curPage;
-    if(!aiWelcomed){aiWelcome();aiWelcomed=true;}
+    if(!aiWelcomed){
+      // Tunggu data selesai di-fetch sebelum tampilkan welcome
+      const showWelcome=()=>{aiWelcome();aiWelcomed=true;};
+      if(_cache.loading){
+        const waitData=setInterval(()=>{if(!_cache.loading){clearInterval(waitData);showWelcome();}},100);
+        setTimeout(()=>{clearInterval(waitData);if(!aiWelcomed)showWelcome();},3000); // fallback 3s
+      }else{
+        showWelcome();
+      }
+    }
     setTimeout(()=>el('aiInput')?.focus(),300);
     // Push state untuk back gesture Android
     history.pushState({aiChat:true},'');
@@ -3587,7 +3596,8 @@ function aiGetContext(){
   const recentShort=[...txs].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,3)
     .map(t=>{const c=catBy(t.category_id);return`${t.date}|${t.type==='income'?'IN':'OUT'}|${c.name}|${fCur(t.amount)}${t.note?'|'+t.note:''}`;}).join('\n');
 
-  const PAGE_CTX={
+  const dataReady=!_cache.loading&&(_cache.accs!==null)&&(_cache.tx!==null);
+  const dataWarning=dataReady?'':'⚠️ Data keuangan masih dimuat, angka mungkin belum akurat.';
     dashboard:'DASHBOARD: ringkasan keuangan & insight.',
     transactions:'TRANSAKSI: analisis & pola pengeluaran.',
     keuangan:'KEUANGAN: anggaran/target/tagihan.',
@@ -3598,7 +3608,7 @@ function aiGetContext(){
 
   // Core system prompt — compact
   let prompt=`Kamu Laksa.na, asisten keuangan pribadi ${s.name}. Bahasa Indonesia kasual, pakai nama "${s.name}" selalu. JANGAN formal/robot. Jawab JSON mentah: {"answer":"...","followups":["..."],"transaction":null}
-
+${dataWarning}
 # DATA ${s.name.toUpperCase()} | ${todayStr}
 Net worth: ${fCur(totalBal)} | Bulan ini: masuk ${fCur(inc)}, keluar ${fCur(exp)}
 Rekening: ${accs.map(a=>`${a.name}=${fCur(a.balance)}${a.balance<0?'⚠️':''}`).join(', ')}
