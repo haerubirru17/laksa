@@ -3493,6 +3493,7 @@ function aiGetContext(){
   const accs=getAccs();
   const buds=getBud();
   const goals=getGoals();
+  const bills=getBills();
   const cats=getCats();
   const now=thisMon();
   const mTx=txs.filter(t=>mKey(t.date)===now);
@@ -3537,103 +3538,115 @@ function aiGetContext(){
     return`${g.name}: terkumpul ${fCur(g.current)} dari target ${fCur(g.target)} (${pct}%)${sisa>0?', masih kurang '+fCur(sisa):'✓ TERCAPAI'}${g.deadline?', deadline '+fDate(g.deadline):''}`;
   }).join('\n')||'Tidak ada target tabungan';
 
+  // Today's date for AI context
+  const todayStr=today();
+  const todayFmt=new Date(todayStr).toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  // Bills: flag yang hampir jatuh tempo (≤7 hari) atau belum dibayar
+  const todayDate=new Date(todayStr);
+  const billStr=bills.map(b=>{
+    const status=b.status==='paid'?'✓ Lunas':'⏳ Belum dibayar';
+    let due='-';let urgency='';
+    if(b.due_type==='monthly'&&b.due_day){
+      due=`tgl ${b.due_day} tiap bulan`;
+      if(b.status!=='paid'){
+        const thisMonth=new Date(todayDate.getFullYear(),todayDate.getMonth(),b.due_day);
+        const diffDays=Math.ceil((thisMonth-todayDate)/(1000*60*60*24));
+        if(diffDays>=0&&diffDays<=7)urgency=` 🔴 JATUH TEMPO ${diffDays===0?'HARI INI':diffDays+' HARI LAGI'}`;
+        else if(diffDays<0)urgency=` ⚠️ SUDAH LEWAT ${Math.abs(diffDays)} HARI`;
+      }
+    }else if(b.due_date){
+      due=b.due_date;
+      if(b.status!=='paid'){
+        const diffDays=Math.ceil((new Date(b.due_date)-todayDate)/(1000*60*60*24));
+        if(diffDays>=0&&diffDays<=7)urgency=` 🔴 JATUH TEMPO ${diffDays===0?'HARI INI':diffDays+' HARI LAGI'}`;
+        else if(diffDays<0)urgency=` ⚠️ SUDAH LEWAT ${Math.abs(diffDays)} HARI`;
+      }
+    }
+    return`${b.name}: ${fCur(b.amount)} | ${status}${urgency} | Jatuh tempo: ${due}`;
+  }).join('\n')||'Tidak ada tagihan';
+
+  // Proactive insights
+  const insights=[];
+  buds.forEach(b=>{
+    const spent=mTx.filter(t=>t.type==='expense'&&t.category_id===b.catId).reduce((s,t)=>s+t.amount,0);
+    const pct=b.limit>0?Math.round((spent/b.limit)*100):0;
+    if(pct>=100)insights.push(`⚠️ Anggaran ${catBy(b.catId).name} TERLAMPAUI (${pct}%)`);
+    else if(pct>=80)insights.push(`⚠️ Anggaran ${catBy(b.catId).name} hampir habis (${pct}%)`);
+  });
+  accs.forEach(a=>{if(a.balance<0)insights.push(`🔴 Rekening ${a.name} MINUS: ${fCur(a.balance)}`);});
+  bills.forEach(b=>{if(b.status!=='paid'&&billStr.includes('🔴')&&billStr.includes(b.name))insights.push(`🔴 Tagihan ${b.name} segera jatuh tempo`);});
+  const insightStr=insights.length?insights.join('\n'):'Semua kondisi keuangan normal ✓';
+
+  // Detect if user is asking about features or developer (conditional sections)
+  const lastUserMsg=(aiHistory.filter(m=>m.role==='user').slice(-1)[0]?.content||'').toLowerCase();
+  const askingFeatures=/fitur|bisa apa|apa aja|kemampuan|fungsi|lakukan|help|bantuan/.test(lastUserMsg);
+  const askingDev=/buat|bangun|kembang|developer|pembuat|creator|siapa yang/.test(lastUserMsg);
+
+  // Only last 3 transactions (not 5) — saves ~40 tokens
+  const recentShort=[...txs].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,3)
+    .map(t=>{const c=catBy(t.category_id);return`${t.date}|${t.type==='income'?'IN':'OUT'}|${c.name}|${fCur(t.amount)}${t.note?'|'+t.note:''}`;}).join('\n');
+
   const PAGE_CTX={
-    dashboard:'User di DASHBOARD — fokus ringkasan keuangan, net worth, pemasukan vs pengeluaran bulan ini, insight umum.',
-    transactions:'User di TRANSAKSI — fokus analisis transaksi, pola pengeluaran, perbandingan periode, detail per kategori.',
-    keuangan:'User di halaman KEUANGAN (tab Anggaran/Target) — fokus status anggaran per kategori atau progress target tabungan sesuai tab aktif.',
-    receipt:'User di SCAN STRUK — fokus analisis pengeluaran dari struk, kategorisasi belanja, tips hemat.',
-    reports:'User di LAPORAN — fokus tren jangka panjang, perbandingan bulanan, insight dari data historis.'
+    dashboard:'DASHBOARD: ringkasan keuangan & insight.',
+    transactions:'TRANSAKSI: analisis & pola pengeluaran.',
+    keuangan:'KEUANGAN: anggaran/target/tagihan.',
+    receipt:'SCAN STRUK: kategorisasi belanja.',
+    reports:'LAPORAN: tren & perbandingan bulanan.'
   };
   const pageCtx=PAGE_CTX[curPage||'dashboard'];
 
-  return`Kamu adalah Laksa.na, asisten keuangan personal yang cerdas, ramah, dan berbicara Bahasa Indonesia kasual. Kamu punya akses ke data keuangan real pengguna.
+  // Core system prompt — compact
+  let prompt=`Kamu Laksa.na, asisten keuangan pribadi ${s.name}. Bahasa Indonesia kasual, pakai nama "${s.name}" selalu. JANGAN formal/robot. Jawab JSON mentah: {"answer":"...","followups":["..."],"transaction":null}
 
-## IDENTITAS DIRIMU
-- Namamu: **Laksa.na** — asisten keuangan pribadi milik ${s.name}.
-- Jika ditanya "siapa kamu / lo siapa / kamu itu apa" → perkenalkan dirimu sebagai Laksa.na, sebutkan 3-4 hal yang bisa kamu bantu. JANGAN jawab dengan identitas pengembang.
-- JANGAN pernah menjawab dengan "Saya dapat membantu..." atau kalimat generik robot. Gunakan gaya kasual dan personal.
+# DATA ${s.name.toUpperCase()} | ${todayStr}
+Net worth: ${fCur(totalBal)} | Bulan ini: masuk ${fCur(inc)}, keluar ${fCur(exp)}
+Rekening: ${accs.map(a=>`${a.name}=${fCur(a.balance)}${a.balance<0?'⚠️':''}`).join(', ')}
+Kat. pengeluaran: ${catExpStr||'-'} | Hal: ${pageCtx}
 
-## IDENTITAS PENGGUNA
-- Nama pengguna: **${s.name}**
-- SELALU panggil user dengan nama "${s.name}" — JANGAN sebut "Anda", "kamu", atau "Pengguna".
-- Jika ditanya "aku siapa / siapa saya" → sebut nama ${s.name} + ringkasan keuangan mereka.
-
-## FITUR APLIKASI LAKSA (WAJIB DIJELASKAN LENGKAP JIKA DITANYA)
-Jika user bertanya apa saja fitur, apa yang bisa kamu lakukan, atau sejenisnya → WAJIB tulis SEMUA 9 fitur ini dengan penjelasan lengkap, JANGAN dipotong atau diringkas:
-1. **Catat Transaksi via Chat** — ${s.name} cukup ketik natural, misal "tadi beli makan 15rb di Mandiri", aku langsung ekstrak dan catat otomatis tanpa perlu klik-klik.
-2. **Multi-Rekening** — kelola beberapa rekening sekaligus (bank, e-wallet, dompet tunai), lihat saldo dan histori masing-masing rekening.
-3. **Anggaran Bulanan** — set batas pengeluaran per kategori (misal: Makan Rp500rb/bulan), pantau real-time supaya tidak jebol.
-4. **Target Tabungan** — buat goals menabung dengan nominal & deadline, pantau progress sampai tercapai.
-5. **Laporan & Tren** — grafik bulanan, donut chart per kategori, bandingkan keuangan antar bulan.
-6. **Scan Struk** — foto struk belanja → AI baca dan catat transaksi otomatis.
-7. **Analisis AI (ini aku!)** — tanya kondisi keuangan, minta tips hemat, analisis pola pengeluaran — semua pakai data real ${s.name}.
-8. **Notifikasi Telegram** — setiap transaksi masuk langsung dikirim ke Telegram sebagai bukti & pengingat.
-9. **Dashboard** — ringkasan net worth, pemasukan vs pengeluaran bulan ini, transaksi terbaru — semuanya dalam satu layar.
-
-## IDENTITAS PENGEMBANG
-Jika ditanya siapa yang MEMBUAT / MEMBANGUN / MENGEMBANGKAN aplikasi ini (bukan "siapa kamu") → jawab:
-"Aplikasi ini lahir dari tangan seorang yang hidup di persimpangan banyak dunia — kecerdasan buatan, poliglot, sejarah, politik, hingga sastra Bahasa Indonesia. Bukan sekadar programmer, tapi seorang pemikir yang kebetulan bisa ngoding. Ingin menyapa atau berkolaborasi? Ketuk pintunya di Instagram: @khey.1717 namanya haeru."
-
-## DEFINISI FITUR (JANGAN TERTUKAR)
-- **ANGGARAN** = spending limit per kategori per bulan. BUKAN tabungan.
-- **TARGET TABUNGAN** = savings goal dengan nominal & deadline. BUKAN pengeluaran.
-
-## ATURAN GAYA BICARA (WAJIB DIIKUTI)
-- Bahasa Indonesia kasual, santai, seperti teman — BUKAN formal/robot.
-- JANGAN gunakan "Saya dapat membantu...", "Tentu saja!", "Dengan senang hati".
-- SELALU panggil user dengan nama: ${s.name}.
-- Jawaban detail → gunakan bold, bullet, heading markdown agar mudah dibaca.
-- JANGAN penggal jawaban di tengah. Jika menulis daftar, tulis sampai selesai.
-
-## FITUR CATAT TRANSAKSI VIA CHAT
-Jika user ingin mencatat transaksi, ekstrak:
-- type: "income" atau "expense"
-- amount: angka (rb=×1000, jt=×1.000.000)
-- account: nama rekening (WAJIB — jika tidak disebutkan, tanya dulu)
-- category: cocokkan dengan kategori yang tersedia
-- note: ringkasan transaksi
-- date: tanggal (default hari ini)
-
-Rekening: ${accs.map(a=>a.name).join(', ')||'belum ada rekening'}
-Kategori: ${cats.map(c=>c.name).join(', ')}
-
-Jika rekening jelas → sertakan "transaction" di JSON. Jika tidak → tanya dulu.
-
-## KONTEKS HALAMAN AKTIF
-${pageCtx}
-
-## DATA KEUANGAN ${s.name.toUpperCase()}
-Nama: ${s.name} | Mata Uang: ${s.currency||'Rp'}
-Total Kekayaan Bersih: ${fCur(totalBal)}
-Bulan ini (${now}): Pemasukan ${fCur(inc)} | Pengeluaran ${fCur(exp)} | Selisih ${fCur(inc-exp)}
-3 Bulan terakhir: ${monthStats}
-Pengeluaran per kategori bulan ini: ${catExpStr||'Belum ada'}
-Rekening: ${accs.map(a=>`${a.name} ${fCur(a.balance)}${a.balance<0?' ⚠️MINUS':''}`).join(' | ')}
-
-## STATUS ANGGARAN
+# ANGGARAN
 ${budStr}
-
-## TARGET TABUNGAN
+# TARGET
 ${goalStr}
+# TAGIHAN
+${billStr}
+# 🚨 INSIGHT (selalu sebut jika ada)
+${insightStr}
+# 5 TX TERAKHIR
+${recentShort||'-'}
 
-## 10 TRANSAKSI TERAKHIR
-${recent||'Belum ada transaksi'}
+# CATAT TRANSAKSI
+Ekstrak dari chat natural. Rekening: ${accs.map(a=>a.name).join('/')||'-'} | Kategori: ${cats.map(c=>c.name).join('/')}
+- expense/income: {type,amount,account_name,category_name,note,date:"${todayStr}"}
+- transfer: {type:"transfer",amount,from_account,to_account,note,date:"${todayStr}"}
+Jika rekening tidak jelas → tanya dulu, JANGAN tebak.
 
-## FORMAT RESPONS (WAJIB)
-Selalu jawab dalam format JSON berikut — TANPA markdown code block, langsung JSON mentah:
-{"answer":"teks jawaban kamu di sini, boleh pakai **bold** dan emoji","followups":["pertanyaan lanjutan 1","pertanyaan lanjutan 2","pertanyaan lanjutan 3"],"transaction":null}
+# FORMAT
+JSON: {"answer":"...markdown ok...","followups":["...","..."],"transaction":null|{...}}
+Jika tidak bisa JSON → plaintext saja.`;
 
-Jika ada transaksi yang perlu dicatat, isi field "transaction":
-{"answer":"...","followups":[...],"transaction":{"type":"expense","amount":35000,"account_name":"BCA","category_name":"Makanan & Minuman","note":"Makan siang","date":"YYYY-MM-DD"}}
+  // Conditional: fitur lengkap hanya jika ditanya
+  if(askingFeatures){
+    prompt+=`\n\n# FITUR LAKSA
+1.Catat TX via chat (natural language)
+2.Multi-rekening (bank/ewallet/tunai)
+3.Anggaran bulanan per kategori
+4.Target tabungan dengan deadline
+5.Tagihan rutin & jatuh tempo
+6.Laporan & grafik tren
+7.Scan struk → catat otomatis
+8.Analisis AI & tips hemat
+9.Notifikasi Telegram
+10.Dashboard net worth`;
+  }
 
-- "answer": jawaban utama. Gunakan formatting markdown berikut secara aktif:
-  - **bold** untuk angka penting, nama rekening, kategori utama
-  - __underline__ untuk insight atau peringatan kritis
-  - \`- item\` atau \`1. item\` untuk daftar rekomendasi, tips, atau perbandingan
-  - \`### Judul\` untuk memisahkan bagian jika jawaban panjang
-- "followups": 2-3 pertanyaan lanjutan RELEVAN, dari sudut pandang user, Bahasa Indonesia kasual
-- "transaction": null jika tidak ada transaksi, atau objek transaksi jika ada
-- Jangan tambahkan apapun di luar JSON`;
+  // Conditional: identitas pengembang hanya jika ditanya
+  if(askingDev){
+    prompt+=`\n\n# PENGEMBANG
+"Aplikasi ini lahir dari tangan seorang yang hidup di persimpangan banyak dunia — kecerdasan buatan, poliglot, sejarah, politik, hingga sastra Bahasa Indonesia. Bukan sekadar programmer, tapi seorang pemikir yang kebetulan bisa ngoding. IG: @khey.1717 (haeru)"`;
+  }
+
+  return prompt;
 }
 
 async function aiSend(){
@@ -3673,9 +3686,17 @@ async function aiCallGroq(){
   try{
     const userId=getUserId();
     const sysPrompt=aiGetContext();
+    // Trim history: estimasi ~4 char/token, jaga total messages <3000 token
+    const maxHistoryChars=6000;
+    let histSlice=aiHistory.slice();
+    while(histSlice.length>2){
+      const totalChars=histSlice.reduce((s,m)=>s+(m.content||'').length,0);
+      if(totalChars<=maxHistoryChars)break;
+      histSlice=histSlice.slice(2); // buang pasangan user+assistant terlama
+    }
     const messages=[
       {role:'system',content:sysPrompt},
-      ...aiHistory.slice(-16)
+      ...histSlice
     ];
 
     // Autochain: kirim array model ke Worker, Worker iterasi jika 429
@@ -3705,10 +3726,14 @@ async function aiCallGroq(){
     }catch(e){answer=raw;}
 
     aiAppendMsg('bot',answer);
-    aiHistory.push({role:'assistant',content:answer});
+    // History: simpan ringkas HANYA jika jawaban adalah penjelasan panjang (bukan transaksi/analisis)
+    // Jawaban transaksi & angka SELALU simpan utuh — penting untuk konteks follow-up
+    const isLongExplanation = answer.length > 400 && !transaction && !/Rp|transaksi|rekening|saldo/i.test(answer.slice(0,100));
+    const histAnswer = isLongExplanation ? answer.slice(0,250)+'…' : answer;
+    aiHistory.push({role:'assistant',content:histAnswer});
 
     // Jika AI deteksi transaksi → tampilkan bubble konfirmasi
-    if(transaction&&transaction.amount&&transaction.account_name){
+    if(transaction&&transaction.amount&&(transaction.account_name||transaction.from_account)){
       aiAppendTxConfirm(transaction);
     }
 
@@ -3731,9 +3756,15 @@ async function aiCallGroq(){
 // ── TRANSACTION CONFIRM BUBBLE ──
 function aiAppendTxConfirm(tx){
   const wrap=el('aiMsgs');
-  const typeLabel=tx.type==='income'?'Pemasukan':'Pengeluaran';
-  const typeClass=tx.type==='income'?'inc':'exp';
-  const typeIco=tx.type==='income'?'↑':'↓';
+  const isTransfer=tx.type==='transfer';
+  const typeLabel=isTransfer?'Transfer':tx.type==='income'?'Pemasukan':'Pengeluaran';
+  const typeClass=isTransfer?'':tx.type==='income'?'inc':'exp';
+  const typeIco=isTransfer?'⇄':tx.type==='income'?'↑':'↓';
+  const accountRow=isTransfer
+    ?`<div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Dari</span><span class="ai-tx-confirm-val">${esc(tx.from_account||'-')}</span></div>
+       <div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Ke</span><span class="ai-tx-confirm-val">${esc(tx.to_account||'-')}</span></div>`
+    :`<div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Rekening</span><span class="ai-tx-confirm-val">${esc(tx.account_name||'-')}</span></div>
+      <div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Kategori</span><span class="ai-tx-confirm-val">${esc(tx.category_name||'Lainnya')}</span></div>`;
   const txId='txc_'+Date.now();
   const div=document.createElement('div');
   div.className='ai-msg bot';
@@ -3747,8 +3778,7 @@ function aiAppendTxConfirm(tx){
       <div class="ai-tx-confirm-rows">
         <div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Jenis</span><span class="ai-tx-confirm-val ${typeClass}">${typeIco} ${typeLabel}</span></div>
         <div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Jumlah</span><span class="ai-tx-confirm-val ${typeClass}">${fCur(tx.amount)}</span></div>
-        <div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Rekening</span><span class="ai-tx-confirm-val">${esc(tx.account_name)}</span></div>
-        <div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Kategori</span><span class="ai-tx-confirm-val">${esc(tx.category_name||'Lainnya')}</span></div>
+        ${accountRow}
         <div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Catatan</span><span class="ai-tx-confirm-val">${esc(tx.note||'-')}</span></div>
         <div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Tanggal</span><span class="ai-tx-confirm-val">${tx.date||today()}</span></div>
       </div>
@@ -3772,44 +3802,35 @@ function aiAppendTxConfirm(tx){
 }
 
 async function aiConfirmTx(tx,bubbleId){
-  // Resolve account_id dan category_id dari nama
   const accs=getAccs();
   const cats=getCats();
-  const acc=accs.find(a=>a.name.toLowerCase().includes((tx.account_name||'').toLowerCase()))||accs[0];
-  const cat=cats.find(c=>c.name.toLowerCase().includes((tx.category_name||'').toLowerCase()))||cats[cats.length-1];
-  if(!acc){toast('Rekening tidak ditemukan.','err');return;}
-
   const bubble=el(bubbleId);
-  if(bubble){
-    const btns=bubble.querySelector('.ai-tx-confirm-btns');
-    if(btns)btns.innerHTML='<div class="ai-tx-confirm-done">⏳ Menyimpan…</div>';
-  }
+  if(bubble){const btns=bubble.querySelector('.ai-tx-confirm-btns');if(btns)btns.innerHTML='<div class="ai-tx-confirm-done">⏳ Menyimpan…</div>';}
 
   try{
-    await api('POST','/transactions',{
-      type:tx.type,
-      amount:tx.amount,
-      date:tx.date||today(),
-      account_id:acc.id,
-      category_id:cat.id,
-      note:tx.note||'',
-      source:'ai-chat'
-    });
-    // Refresh data
-    const m=(tx.date||today()).slice(0,7);
-    await Promise.all([fetchTx(m),fetchAccs()]);
-    if(curPage==='dashboard'||curPage==='transactions')refresh();
-
-    if(bubble){
-      const btns=bubble.querySelector('.ai-tx-confirm-btns');
-      if(btns)btns.innerHTML='<div class="ai-tx-confirm-done">✅ Berhasil dicatat!</div>';
+    if(tx.type==='transfer'){
+      // Transfer: dua transaksi — expense dari, income ke
+      const fromAcc=accs.find(a=>a.name.toLowerCase().includes((tx.from_account||'').toLowerCase()))||accs[0];
+      const toAcc=accs.find(a=>a.name.toLowerCase().includes((tx.to_account||'').toLowerCase()));
+      if(!fromAcc||!toAcc){toast('Rekening tidak ditemukan.','err');return;}
+      const transferCat=cats.find(c=>c.name.toLowerCase().includes('transfer'))||cats[cats.length-1];
+      await api('POST','/transactions',{type:'expense',amount:tx.amount,date:tx.date||today(),account_id:fromAcc.id,category_id:transferCat.id,note:tx.note||`Transfer ke ${toAcc.name}`,source:'ai-chat'});
+      await api('POST','/transactions',{type:'income',amount:tx.amount,date:tx.date||today(),account_id:toAcc.id,category_id:transferCat.id,note:tx.note||`Transfer dari ${fromAcc.name}`,source:'ai-chat'});
+      const m=(tx.date||today()).slice(0,7);
+      await Promise.all([fetchTx(m),fetchAccs()]);
+    }else{
+      const acc=accs.find(a=>a.name.toLowerCase().includes((tx.account_name||'').toLowerCase()))||accs[0];
+      const cat=cats.find(c=>c.name.toLowerCase().includes((tx.category_name||'').toLowerCase()))||cats[cats.length-1];
+      if(!acc){toast('Rekening tidak ditemukan.','err');return;}
+      await api('POST','/transactions',{type:tx.type,amount:tx.amount,date:tx.date||today(),account_id:acc.id,category_id:cat.id,note:tx.note||'',source:'ai-chat'});
+      const m=(tx.date||today()).slice(0,7);
+      await Promise.all([fetchTx(m),fetchAccs()]);
     }
+    if(curPage==='dashboard'||curPage==='transactions')refresh();
+    if(bubble){const btns=bubble.querySelector('.ai-tx-confirm-btns');if(btns)btns.innerHTML='<div class="ai-tx-confirm-done">✅ Berhasil dicatat!</div>';}
     toast('Transaksi dicatat via Laksa.na!','ok');
   }catch(e){
-    if(bubble){
-      const btns=bubble.querySelector('.ai-tx-confirm-btns');
-      if(btns)btns.innerHTML='<div class="ai-tx-confirm-done" style="color:var(--expense)">❌ Gagal: '+esc(e.message)+'</div>';
-    }
+    if(bubble){const btns=bubble.querySelector('.ai-tx-confirm-btns');if(btns)btns.innerHTML='<div class="ai-tx-confirm-done" style="color:var(--expense)">❌ Gagal: '+esc(e.message)+'</div>';}
     toast('Gagal catat transaksi: '+e.message,'err');
   }
 }
