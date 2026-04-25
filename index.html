@@ -1425,6 +1425,9 @@ html[data-theme="dark"] .acc-tab.active{background:rgba(37,99,235,.2);color:var(
       <div class="ai-hdr-name">Laksa.na</div>
       <div class="ai-hdr-status"><span class="ai-status-dot"></span><span id="aiModelLabel">Asisten Keuanganmu</span></div>
     </div>
+    <button class="ai-hdr-close" onclick="aiResetChat()" title="Reset chat" style="margin-right:.2rem">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+    </button>
     <button class="ai-hdr-close" onclick="toggleAiChat()" title="Tutup">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
@@ -3459,9 +3462,22 @@ window.addEventListener('popstate',e=>{
   if(aiOpen){aiOpen=false;const panel=el('aiPanel'),fab=el('aiFab');if(panel){panel.classList.remove('open');setTimeout(()=>{if(!aiOpen)panel.style.display='none';},320);}if(fab)fab.classList.remove('open');document.body.style.overflow='';}
 });
 
+function aiResetChat(){
+  aiHistory=[];
+  aiWelcomed=false;
+  aiLastPage='';
+  const msgs=el('aiMsgs');
+  if(msgs)msgs.innerHTML='';
+  const sugs=el('aiSugs');
+  if(sugs){sugs.innerHTML='';sugs.style.display='none';}
+  aiWelcome();
+  aiWelcomed=true;
+  aiUpdateSugs();
+}
+
 function aiWelcome(){
-  const s=getSet();
-  const name=s.name||'Kamu';
+  const _prof=getProfile();const _set=getSet();
+  const name=_prof?.name||_set.name||'Kamu';
   const txs=getTx();
   const now=thisMon();
   const mTx=txs.filter(t=>mKey(t.date)===now);
@@ -3478,7 +3494,7 @@ function aiWelcome(){
 
 function aiGetContext(){
   const _set=getSet();const _prof=getProfile();
-  const s={..._set,name:_prof?.name||_set.name||'Pengguna'};
+  const s={..._set,name:(_prof?.name||_set.name||'Pengguna')};
   const txs=getTx();
   const accs=getAccs();
   const buds=getBud();
