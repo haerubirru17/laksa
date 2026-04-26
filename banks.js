@@ -72,21 +72,23 @@ const BANKS = {
   danamonsyariah:{color:'#046148',c2:'#034a37',domain:'danamonsyariah.co.id'},
   cimbniagasyariah:{color:'#6A1F1D',c2:'#521816',domain:'cimbniagasyariah.co.id'},
   bukopinsyariah:{color:'#59A544',c2:'#468336',domain:'bukopinsyariah.co.id'},
-  sinarmassyariah:{color:'#009035',c2:'#00722a',domain:'sinarmassyariah.co.id'},
+  sinarmassyariah:{color:'#009035',c2:'#00722a',domain:'sinarmassyariah.co.id',isSquare:true},
   victoriasyariah:{color:'#7CB342',c2:'#639035',domain:'victoriasyariah.co.id'},
   nanobanksyariah:{color:'#002657',c2:'#001c42',domain:'nanobanksyariah.co.id'},
   ntbsyariah: {color:'#0B6E45',c2:'#095636',domain:'ntbsyariah.co.id'},
   panindubaisyariah:{color:'#2171B5',c2:'#1a5a91',domain:'panindubaisyariah.co.id'},
+  paninsyariah:{color:'#006F39',c2:'#00542b',domain:'paninbanksyariah.co.id'},
 
   // ── Bank Regional ──
   dki:       {color:'#2E2524',c2:'#1f1918',domain:'bankdki.co.id'},
   jakarta:   {color:'#1A1A1A',c2:'#0d0d0d',domain:'bankjakarta.co.id'},
-  ntt:       {color:'#28166F',c2:'#1e1054',domain:'bankntt.co.id'},
+  ntt:       {color:'#00A550',c2:'#00823f',domain:'bankntt.co.id'},
   nagari:    {color:'#2E2524',c2:'#1f1918',domain:'banknagari.co.id'},
-  sultra:    {color:'#1565C0',c2:'#104e99',domain:'banksultra.co.id'},
-  sumsel:    {color:'#0077B3',c2:'#005c8c',domain:'banksumsel.co.id'},
-  sumut:     {color:'#0D47A1',c2:'#0a3780',domain:'banksumut.co.id'},
+  sultra:    {color:'#1565C0',c2:'#104e99',domain:'banksultra.co.id',isSquare:true},
+  sumsel:    {color:'#0077B3',c2:'#005c8c',domain:'banksumsel.co.id',isSquare:true},
+  sumut:     {color:'#0D47A1',c2:'#0a3780',domain:'banksumut.co.id',isSquare:true},
   bws:       {color:'#0068AC',c2:'#005088',domain:'bankbws.co.id'},
+  panin:     {color:'#004689',c2:'#003466',domain:'panin.co.id'},
   paninbank: {color:'#007DC5',c2:'#00639d',domain:'paninbank.co.id'},
 
   // ── Bank Asing ──
@@ -110,7 +112,7 @@ const BANKS = {
   ibkbank:   {color:'#0055A2',c2:'#004381',domain:'ibkbank.co.id'},
   hanabank:  {color:'#008A8B',c2:'#006d6e',domain:'hanabank.co.id'},
   jtrustbank:{color:'#009EE3',c2:'#007fb5',domain:'jtrustbank.co.id'},
-  smbcindonesia:{color:'#134939',c2:'#0e372b',domain:'smbcindonesia.co.id'},
+  smbcindonesia:{color:'#134939',c2:'#0e372b',domain:'smbcindonesia.co.id',isSquare:true},
   ofamerica: {color:'#EE2A24',c2:'#bf221d',domain:'bankofamerica.co.id'},
   ofchina:   {color:'#B30738',c2:'#8f062d',domain:'bankofchina.co.id'},
   ofindia:   {color:'#EE7A00',c2:'#bf6200',domain:'bankofindia.co.id'},
@@ -238,11 +240,13 @@ function getLogoHtml(accName, b, imgClass, fbClass, imgStyle = '', useFavicon = 
   
   let imgSrc = `Banks%20Logo/${slug}.svg`;
   if (useFavicon) {
-    if (domain) imgSrc = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
-    else imgSrc = `https://www.google.com/s2/favicons?domain=${slug}.co.id&sz=128`;
+    if (domain) imgSrc = `https://icon.horse/icon/${domain}`;
+    else imgSrc = `https://icon.horse/icon/${slug}.co.id`;
   }
 
+  // Jika favicon error, fallback ke file SVG lokal dengan onerror berlapis
+  const fallbackSvg = `Banks%20Logo/${slug}.svg`;
   return `<img class="${imgClass}" src="${imgSrc}" alt="" style="${imgStyle}"
-    onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
+    onerror="if(this.src!=='${fallbackSvg}')this.src='${fallbackSvg}';else{this.style.display='none';this.nextElementSibling.style.display='flex';}"/>
     <div class="${fbClass}" style="display:none">${init}</div>`;
 }
