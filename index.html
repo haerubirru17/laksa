@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="banks.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -369,8 +370,8 @@ html[data-theme="dark"] .dash-avatar-dropdown{background:rgba(5,10,24,.97)}
 .dc-chip{width:30px;height:22px;border-radius:4px;background:linear-gradient(135deg,#d4a843,#f0c060);position:relative;overflow:hidden;flex-shrink:0}
 .dc-chip::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:rgba(0,0,0,.22);transform:translateY(-50%)}
 .dc-chip::after{content:'';position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(0,0,0,.18)}
-.dc-logo-wrap{width:70px;height:38px;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.dc-logo{width:100%;height:100%;object-fit:cover;filter:brightness(0) invert(1) drop-shadow(0 2px 4px rgba(0,0,0,0.15))}
+.dc-logo-wrap{width:70px;height:38px;border-radius:6px;background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.12)}
+.dc-logo{width:100%;height:100%;object-fit:cover}
 .dc-logo-fb{font-size:.6rem;font-weight:900;color:#fff;text-align:center;line-height:1.1;letter-spacing:.02em;display:none}
 .dc-mid{flex:1;padding:.3rem 0;position:relative;z-index:1}
 .dc-bal-lbl{font-family:'JetBrains Mono',monospace;font-size:.55rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:.18rem}
@@ -1471,55 +1472,7 @@ const DEF_CATS=[
 ];
 const DEF_ACCS=[{id:'a1',name:'Dompet Tunai',balance:0,color:'#fbbf24'},{id:'a2',name:'Bank Mandiri',balance:0,color:'#E6B800'}];
 const DEF_SET={name:'Pengguna',currency:'Rp',theme:'warm'};
-const BANKS={
-  bca:{color:'#003399',c2:'#1a4fb5',domain:'bca.co.id'},
-  mandiri:{color:'#0C3B67',c2:'#0a5296',domain:'bankmandiri.co.id'},
-  bni:{color:'#E55300',c2:'#b84200',domain:'bni.co.id'},
-  bri:{color:'#003087',c2:'#1a4fb5',domain:'bri.co.id'},
-  bsi:{color:'#00724A',c2:'#005a3a',domain:'bankbsi.co.id'},
-  jago:{color:'#F28705',c2:'#d47000',domain:'jago.com'},
-  'bank jago':{color:'#F28705',c2:'#d47000',domain:'jago.com',slug:'jago'},
-  neo:{color:'#FF9F00',c2:'#d98500',domain:'bankneocommerce.co.id'},
-  neobank:{color:'#FF9F00',c2:'#d98500',domain:'bankneocommerce.co.id',slug:'neo'},
-  'bank neo':{color:'#FF9F00',c2:'#d98500',domain:'bankneocommerce.co.id',slug:'neo'},
-  aladin:{color:'#1B21CC',c2:'#1218a0',domain:'aladinbank.id'},
-  aladinbank:{color:'#1B21CC',c2:'#1218a0',domain:'aladinbank.id',slug:'aladin'},
-  krom:{color:'#6C38D9',c2:'#5527b8',domain:'krom.id',slug:'krombank'},
-  krombank:{color:'#6C38D9',c2:'#5527b8',domain:'krom.id'},
-  permata:{color:'#0064FF',c2:'#0050cc',domain:'permatabank.com',slug:'permatabank'},
-  permatabank:{color:'#0064FF',c2:'#0050cc',domain:'permatabank.com'},
-  cimb:{color:'#8B0000',c2:'#6b0000',domain:'cimbniaga.co.id',slug:'cimbniaga'},
-  cimbniaga:{color:'#8B0000',c2:'#6b0000',domain:'cimbniaga.co.id'},
-  seabank:{color:'#FF5722',c2:'#CC461B',domain:'seabank.co.id'},
-  blu:{color:'#0097DA',c2:'#007ab8',domain:'blu.co.id'},
-  mega:{color:'#004B93',c2:'#003870',domain:'bankmega.com'},
-  bukopin:{color:'#005BAA',c2:'#004488',domain:'bukopin.co.id'},
-  danamon:{color:'#EF3E23',c2:'#c42e10',domain:'danamon.co.id'},
-  btn:{color:'#007A3D',c2:'#005c2d',domain:'btn.co.id'},
-  ocbc:{color:'#C0392B',c2:'#962d22',domain:'ocbcnisp.com',slug:'ocbcnisp'},
-  ocbcnisp:{color:'#C0392B',c2:'#962d22',domain:'ocbcnisp.com'},
-  hsbc:{color:'#DB0011',c2:'#b0000e',domain:'hsbc.co.id'},
-  dbs:{color:'#E21836',c2:'#b81229',domain:'dbs.co.id'},
-  muamalat:{color:'#6B2D8B',c2:'#552270',domain:'bankmuamalat.co.id'},
-  sinarmas:{color:'#FAC710',c2:'#c89e0d',domain:'banksinarmas.com'},
-  jenius:{color:'#2B5592',c2:'#1d3d70',domain:'jenius.com'},
-  gopay:{color:'#00ACEA',c2:'#008bbf',domain:'gopay.co.id'},
-  ovo:{color:'#6231A0',c2:'#4e2680',domain:'ovo.id'},
-  dana:{color:'#118EEA',c2:'#0d72c0',domain:'dana.id'},
-  shopeepay:{color:'#EE4D2D',c2:'#c93b1e',domain:'shopee.co.id'},
-  shopee:{color:'#EE4D2D',c2:'#c93b1e',domain:'shopee.co.id',slug:'shopeepay'},
-  hi:{color:'#FF6B35',c2:'#cc5529',domain:'hibank.co.id',slug:'hibank'},
-  hibank:{color:'#FF6B35',c2:'#cc5529',domain:'hibank.co.id'},
-  ntt:{color:'#1A6B3C',c2:'#14542f',domain:'bankntt.co.id'},
-  ina:{color:'#0066B3',c2:'#00518f',domain:'bankina.co.id'},
-  mas:{color:'#003F87',c2:'#00316b',domain:'bankmas.co.id'},
-  bws:{color:'#8B1A1A',c2:'#6e1414',domain:'bfraudws.co.id'},
-  oub:{color:'#003399',c2:'#002277',domain:'bankoub.co.id'},
-  tunai:{color:'#34d399',c2:'#10b981',domain:null},
-  cash:{color:'#34d399',c2:'#10b981',domain:null},
-  dompet:{color:'#5c6ac4',c2:'#4355b9',domain:null,isWallet:true},
-  kas:{color:'#d4920a',c2:'#a87200',domain:null}
-};
+// BANKS, SVG_FILES, detBank, getLogoHtml → dipindahkan ke banks.js
 
 const CAT_ICONS={
   'c1':`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>`,
@@ -1643,14 +1596,7 @@ function showSkeletons() {
     const tl=el('txList'); if(tl) tl.innerHTML=Array(5).fill('<div class="skeleton" style="height:60px;margin-bottom:.5rem;border-radius:11px"></div>').join('');
   }
 }
-function getLogoHtml(accName, b, imgClass, fbClass, imgStyle='') {
-  const init=(accName.replace(/[^a-zA-Z0-9]/g,'').slice(0,3)||'?').toUpperCase();
-  const slug=b&&b.slug?b.slug:(b&&b.domain?b.domain.split('.')[0]:null);
-  if(!slug) return `<div class="${fbClass}" style="display:flex">${init}</div>`;
-  return `<img class="${imgClass}" src="Banks%20Logo/${slug}.svg" alt="" style="${imgStyle}" 
-    onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
-    <div class="${fbClass}" style="display:none">${init}</div>`;
-}
+// getLogoHtml → dipindahkan ke banks.js
 function animateValue(obj, start, end, duration) {
   let startTimestamp = null;
   const step = (timestamp) => {
@@ -1696,74 +1642,7 @@ const esc=(s)=>s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').r
 const el=(id)=>document.getElementById(id);
 const uid=()=>'id_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
 
-// Daftar semua file SVG yang tersedia di folder Banks Logo
-const SVG_FILES=['aladin','allobank','anz','arthagrahainternasional','bangkokbank','bca','bcadigital','bcasyariah','blu','bni','bnpparibas','bri','bsi','btn','btnsyariah','btpnsyariah','bukopin','bukopinsyariah','bumiartha','bws','capital','ccbindonesia','chinaconstructionbankindonesia','cimbniaga','cimbniagasyariah','citibank','commonwealthbank','creditsuisse','ctbcbank','danamon','danamonsyariah','dbs','deutschebank','dki','ganesha','hanabank','hibank','hsbc','ibkbank','icbc','ina','indexselindo','ingbank','jago','jakarta','jasajakarta','jenius','jpmorganchaseandco','jtrustbank','krombank','linebank','mandiri','mas','maspion','mayora','mega','megasyariah','mestika','mizuho','mncbank','muamalat','mufg','nagari','nanobanksyariah','neo','nobubank','ntbsyariah','ntt','ocbcnisp','ofamerica','ofchina','ofindia','okbank','oub','paninbank','panindubaisyariah','permatabank','primabank','raya','resona','sahabatsampoerna','salutgo','saqu','sbi','seabank','shinhanbank','sinarmas','sinarmassyariah','smbcindonesia','standartcartered','sultra','sumsel','sumut','superbank','victoria','victoriasyariah'];
-
-const detBank=(name)=>{
-  let n=(name||'').toLowerCase().trim();
-  
-  // 1. Alias untuk nama panjang/resmi yang sangat berbeda dari nama file
-  const aliases={
-    'central asia syariah':'bcasyariah','central asia':'bca',
-    'rakyat indonesia':'bri','negara indonesia':'bni',
-    'syariah indonesia':'bsi','tabungan negara syariah':'btnsyariah',
-    'tabungan negara':'btn','go-pay':'gopay','neo commerce':'neo',
-    'artha bumi':'bumiartha','bumi artha':'bumiartha',
-    'artha graha':'arthagrahainternasional',
-    'china construction':'chinaconstructionbankindonesia',
-    'jpmorgan':'jpmorganchaseandco','standard chartered':'standartcartered',
-    'panin dubai syariah':'panindubaisyariah'
-  };
-  let forcedSlug=null,aLen=0;
-  for(let a in aliases){if(n.includes(a)&&a.length>aLen){forcedSlug=aliases[a];aLen=a.length;}}
-
-  // 2. Bersihkan nama
-  const nClean=n.replace(/\bbank\b/gi,'').trim().replace(/\s+/g,'').replace(/[^a-z0-9]/g,'');
-
-  if(forcedSlug){
-    const b=BANKS[forcedSlug]||{color:null,c2:null,domain:forcedSlug+'.co.id'};
-    return{...b,slug:forcedSlug};
-  }
-
-  // 3. Cari di BANKS database
-  let best=null,bestLen=0,bestK=null;
-  const isSyariah=nClean.includes('syariah');
-  for(const[k,b]of Object.entries(BANKS)){
-    const kClean=k.replace(/\bbank\b/g,'').replace(/[^a-z0-9]/g,'');
-    if(!kClean)continue;
-    const kHasSyariah=kClean.includes('syariah');
-    const exact=(nClean===kClean);
-    const partial=nClean.includes(kClean)&&(isSyariah===kHasSyariah);
-    if((exact||partial)&&kClean.length>bestLen){best=b;bestLen=kClean.length;bestK=kClean;}
-  }
-  if(best)return{...best,slug:best.slug||bestK};
-
-  // 4. AUTO-MATCH: cari file SVG terbaik dari daftar 96 file
-  let bestFile=null,bestScore=0;
-  for(const f of SVG_FILES){
-    let score=0;
-    const fStrip=f.replace(/bank/g,''); // versi tanpa "bank"
-    if(nClean===f||nClean===fStrip){score=10000;}
-    else if((f.includes(nClean)||fStrip.includes(nClean))&&nClean.length>=3){score=5000+nClean.length;}
-    else if((nClean.includes(f)||nClean.includes(fStrip))&&f.length>=3&&fStrip.length>=3){
-      const fSy=f.includes('syariah');
-      if(isSyariah===fSy)score=3000+f.length;
-    }
-    if(score>bestScore){bestScore=score;bestFile=f;}
-  }
-  if(bestFile&&bestScore>=3000){
-    const b=BANKS[bestFile]||{color:null,c2:null,domain:bestFile+'.co.id'};
-    return{...b,slug:bestFile};
-  }
-
-  // 5. Dompet/wallet
-  if(/dompet|tunai|cash|wallet|kas/i.test(n))
-    return{color:'#5c6ac4',c2:'#4355b9',domain:null,isWallet:true,slug:nClean};
-
-  // 6. Fallback
-  const slug=nClean||'unknown';
-  return{color:null,c2:null,domain:slug+'.co.id',guessed:true,slug:slug};
-};
+// SVG_FILES, detBank → dipindahkan ke banks.js
 
 // ── THEME ──
 function applyTheme(theme,btn,save=true){
@@ -4042,7 +3921,7 @@ function renderAccSheet(){
   const monIn=monTx.filter(t=>(t.type==='income'&&t.account_id===accSheetId)||(t.type==='transfer'&&t.to_acc_id===accSheetId)).reduce((s,t)=>s+t.amount,0);
   const monOut=monTx.filter(t=>(t.type==='expense'&&t.account_id===accSheetId)||(t.type==='transfer'&&t.account_id===accSheetId&&t.to_acc_id!==accSheetId)).reduce((s,t)=>s+t.amount,0);
   const monOpts=months.length?months.map(m=>`<option value="${m}"${m===accSheetMon?' selected':''}>${m}</option>`).join(''):`<option value="${thisMon()}">${thisMon()}</option>`;
-  const logoHtml=getLogoHtml(acc.name, b, '', 'acc-sheet-ava-fb', 'width:100%;height:100%;object-fit:contain;border-radius:14px;transform:scale(1.35);filter:brightness(0) invert(1) drop-shadow(0 2px 4px rgba(0,0,0,0.15))');
+  const logoHtml=getLogoHtml(acc.name, b, '', 'acc-sheet-ava-fb', 'width:100%;height:100%;object-fit:contain;border-radius:14px;transform:scale(1.35)');
   el('accSheet').innerHTML=`
     <div class="acc-sheet-handle"></div>
     <div class="acc-sheet-banner">
