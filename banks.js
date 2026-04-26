@@ -49,8 +49,8 @@ const BANKS = {
   neo:       {color:'#FF9F00',c2:'#E68F00',domain:'bankneocommerce.co.id'},
   neobank:   {color:'#FF9F00',c2:'#E68F00',domain:'bankneocommerce.co.id',slug:'neo'},
   'bank neo':{color:'#FF9F00',c2:'#E68F00',domain:'bankneocommerce.co.id',slug:'neo'},
-  aladin:    {color:'#1B21CC',c2:'#1218a0',domain:'aladinbank.id'},
-  aladinbank:{color:'#1B21CC',c2:'#1218a0',domain:'aladinbank.id',slug:'aladin'},
+  aladin:    {color:'#1B21CC',c2:'#1218a0',domain:'aladinbank.id',favicon:'https://aladinbank.id/favicon.ico'},
+  aladinbank:{color:'#1B21CC',c2:'#1218a0',domain:'aladinbank.id',slug:'aladin',favicon:'https://aladinbank.id/favicon.ico'},
   krom:      {color:'#6936D3',c2:'#5527b8',domain:'krom.id',slug:'krombank'},
   krombank:  {color:'#6936D3',c2:'#5527b8',domain:'krom.id'},
   blu:       {color:'#00B4C5',c2:'#008f9c',domain:'blu.co.id'},
@@ -240,8 +240,9 @@ function getLogoHtml(accName, b, imgClass, fbClass, imgStyle = '', useFavicon = 
   
   let imgSrc = `Banks%20Logo/${slug}.svg`;
   if (useFavicon) {
-    if (domain) imgSrc = `https://icon.horse/icon/${domain}`;
-    else imgSrc = `https://icon.horse/icon/${slug}.co.id`;
+    if (b && b.favicon) imgSrc = b.favicon;
+    else if (domain) imgSrc = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+    else imgSrc = `https://www.google.com/s2/favicons?domain=${slug}.co.id&sz=128`;
   }
 
   // Jika favicon error, fallback ke file SVG lokal dengan onerror berlapis
