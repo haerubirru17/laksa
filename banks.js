@@ -228,13 +228,21 @@ const detBank = (name) => {
   return { color: null, c2: null, domain: slug + '.co.id', guessed: true, slug: slug };
 };
 
-// ── FUNGSI RENDER LOGO ──
-function getLogoHtml(accName, b, imgClass, fbClass, imgStyle = '') {
+// ⚡ FUNGSI RENDER LOGO ⚡
+function getLogoHtml(accName, b, imgClass, fbClass, imgStyle = '', useFavicon = false) {
   const init = (accName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 3) || '?').toUpperCase();
   const slug = b && b.slug ? b.slug : (b && b.domain ? b.domain.split('.')[0] : null);
-  if (!slug) return `<div class="${fbClass}" style="display:flex">${init}</div>`;
-  return `<img class="${imgClass}" src="Banks%20Logo/${slug}.svg" alt="" style="${imgStyle}"
+  const domain = b && b.domain ? b.domain : null;
+  
+  if (!slug && !domain) return `<div class="${fbClass}" style="display:flex">${init}</div>`;
+  
+  let imgSrc = `Banks%20Logo/${slug}.svg`;
+  if (useFavicon) {
+    if (domain) imgSrc = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+    else imgSrc = `https://www.google.com/s2/favicons?domain=${slug}.co.id&sz=128`;
+  }
+
+  return `<img class="${imgClass}" src="${imgSrc}" alt="" style="${imgStyle}"
     onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
     <div class="${fbClass}" style="display:none">${init}</div>`;
 }
-
