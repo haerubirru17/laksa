@@ -3921,7 +3921,7 @@ function renderAccSheet(){
   const monIn=monTx.filter(t=>(t.type==='income'&&t.account_id===accSheetId)||(t.type==='transfer'&&t.to_acc_id===accSheetId)).reduce((s,t)=>s+t.amount,0);
   const monOut=monTx.filter(t=>(t.type==='expense'&&t.account_id===accSheetId)||(t.type==='transfer'&&t.account_id===accSheetId&&t.to_acc_id!==accSheetId)).reduce((s,t)=>s+t.amount,0);
   const monOpts=months.length?months.map(m=>`<option value="${m}"${m===accSheetMon?' selected':''}>${m}</option>`).join(''):`<option value="${thisMon()}">${thisMon()}</option>`;
-  const logoHtml=getLogoHtml(acc.name, b, '', 'acc-sheet-ava-fb', 'width:100%;height:100%;object-fit:contain;border-radius:14px;transform:scale(1.35)');
+  const logoHtml=getLogoHtml(acc.name, b, '', 'acc-sheet-ava-fb', 'width:100%;height:100%;object-fit:cover;border-radius:14px;', true);
   el('accSheet').innerHTML=`
     <div class="acc-sheet-handle"></div>
     <div class="acc-sheet-banner">
