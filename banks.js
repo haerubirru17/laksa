@@ -1,117 +1,98 @@
-// ═══════════════════════════════════════════════════════════
-// banks.js — Sistem Logo & Warna Bank untuk Laksa
-// Berisi: database bank, auto-matching, dan logo rendering
-// ═══════════════════════════════════════════════════════════
-
-// ── DATABASE WARNA BRAND BANK ──
-// Warna diekstrak dari file SVG logo resmi masing-masing bank
 const BANKS = {
-  // ── Bank BUMN ──
-  bca:       {color:'#003399',c2:'#00297a',domain:'bca.co.id',logoScale:1.5},
-  mandiri:   {color:'#003A70',c2:'#002a52',domain:'bankmandiri.co.id',logoScale:1.6},
-  bni:       {color:'#E55300',c2:'#b84200',domain:'bni.co.id',logoScale:1.8},
-  bri:       {color:'#00529C',c2:'#003d75',domain:'bri.co.id',logoScale:1.5},
-  bsi:       {color:'#00A39D',c2:'#007d78',domain:'bankbsi.co.id',logoScale:1.6},
-  btn:       {color:'#0069AB',c2:'#005088',domain:'btn.co.id',logoScale:1.5},
-
-  // ── Bank Swasta Nasional ──
-  mega:      {color:'#003B7B',c2:'#002d5e',domain:'bankmega.com',logoScale:1.6},
-  danamon:   {color:'#046148',c2:'#034a37',domain:'danamon.co.id',logoScale:1.5},
-  permata:   {color:'#0064FF',c2:'#0050cc',domain:'permatabank.com',slug:'permatabank',logoScale:1.7},
-  permatabank:{color:'#0064FF',c2:'#0050cc',domain:'permatabank.com',logoScale:1.7},
-  cimb:      {color:'#790008',c2:'#5e0006',domain:'cimbniaga.co.id',slug:'cimbniaga',logoScale:1.5},
-  cimbniaga: {color:'#790008',c2:'#5e0006',domain:'cimbniaga.co.id',logoScale:1.5},
-  bukopin:   {color:'#005BAA',c2:'#004488',domain:'bukopinfinance.co.id',logoScale:1.6},
-  sinarmas:  {color:'#1A1A2E',c2:'#0f0f1c',domain:'banksinarmas.com',logoScale:1.5},
-  muamalat:  {color:'#420655',c2:'#320440',domain:'ib.muamalatbank.com',logoScale:1.6},
-  ocbc:      {color:'#D10A10',c2:'#a5080d',domain:'ocbc.id',slug:'ocbcnisp',logoScale:1.5},
-  ocbcnisp:  {color:'#D10A10',c2:'#a5080d',domain:'ocbc.id',logoScale:1.5},
-  victoria:  {color:'#C62828',c2:'#9e2020',domain:'victoriabank.co.id'},
-  capital:   {color:'#003058',c2:'#002240',domain:'capitalfinancial.co.id'},
-  mestika:   {color:'#282D68',c2:'#1e2250',domain:'bankmestika.co.id'},
-  ganesha:   {color:'#4A4A4A',c2:'#363636',domain:'bankganesha.co.id'},
-  maspion:   {color:'#ED1C24',c2:'#c2161d',domain:'maspion.com'},
-  bumiartha: {color:'#234089',c2:'#1a306a',domain:'bankbba.co.id'},
-  ina:       {color:'#292567',c2:'#1f1c4f',domain:'bankina.co.id'},
-  indexselindo:{color:'#003C5D',c2:'#002d46',domain:'bankindexselindo.co.id'},
-  mas:       {color:'#2C2730',c2:'#1e1a22',domain:'bankmas.co.id'},
-  mncbank:   {color:'#223C77',c2:'#1a2e5c',domain:'www.mncfinancialservices.com'},
-  nobubank:  {color:'#E20613',c2:'#b5050f',domain:'nobubank.com'},
-  primabank: {color:'#0D92D2',c2:'#0a74a8',domain:'primabank.co.id'},
-  sahabatsampoerna:{color:'#CC0000',c2:'#a30000',domain:'banksampoerna.com'},
-  maybank:   {color:'#FFC800',c2:'#E5B400',domain:'maybank.co.id'},
-  okbank:    {color:'#3D2D3C',c2:'#2e2230',domain:'okbank.co.id'},
-
-  // ── Bank Digital ──
-  jago:      {color:'#F28705',c2:'#d47000',domain:'jago.com',logoScale:1.4},
-  'bank jago':{color:'#F28705',c2:'#d47000',domain:'jago.com',slug:'jago',logoScale:1.4},
-  neo:       {color:'#FF9F00',c2:'#E68F00',domain:'bankneocommerce.co.id',logoScale:1.6},
-  neobank:   {color:'#FF9F00',c2:'#E68F00',domain:'bankneocommerce.co.id',slug:'neo',logoScale:1.6},
-  'bank neo':{color:'#FF9F00',c2:'#E68F00',domain:'bankneocommerce.co.id',slug:'neo',logoScale:1.6},
-  aladin:    {color:'#1B21CC',c2:'#1218a0',domain:'aladinbank.id',logoScale:1.5},
-  aladinbank:{color:'#1B21CC',c2:'#1218a0',domain:'aladinbank.id',slug:'aladin',logoScale:1.5},
-  krom:      {color:'#6936D3',c2:'#5527b8',domain:'krom.id',slug:'krombank',isSquare:true},
-  krombank:  {color:'#6936D3',c2:'#5527b8',domain:'krom.id',isSquare:true},
-  blu:       {color:'#00B4C5',c2:'#008f9c',domain:'blu.co.id',logoScale:1.5},
-  seabank:   {color:'#FFC53D',c2:'#E5B137',domain:'seabank.co.id',logoScale:1.5},
-  superbank: {color:'#00C450',c2:'#00A040',domain:'superbank.id',logoScale:1.5},
-  linebank:  {color:'#00C300',c2:'#009a00',domain:'linebank.co.id',logoScale:1.5},
-  hibank:    {color:'#3D3D3D',c2:'#2a2a2a',domain:'hibank.co.id',logoScale:1.5},
-  hi:        {color:'#3D3D3D',c2:'#2a2a2a',domain:'hibank.co.id',slug:'hibank',logoScale:1.5},
-  raya:      {color:'#FF6400',c2:'#cc5000',domain:'bankraya.co.id',logoScale:1.5},
-  saqu:      {color:'#4834D4',c2:'#3628a8',domain:'banksaqu.co.id',logoScale:1.5},
-  salutgo:   {color:'#2AA7DE',c2:'#2186b2',domain:'salutbank.co.id',logoScale:1.5},
+  // ── Bank Pemerintah ──
+  bri:       {color:'#003D88',c2:'#002d68',domain:'www.bri.co.id'},
+  bni:       {color:'#FF6600',c2:'#cc5200',domain:'www.bni.co.id'},
+  bca:       {color:'#005EB8',c2:'#004a9e',domain:'www.bca.co.id'},
+  mandiri:   {color:'#003087',c2:'#00256b',domain:'www.bankmandiri.co.id'},
+  btn:       {color:'#003580',c2:'#002860',domain:'www.btn.co.id'},
+  bsi:       {color:'#4B8B3B',c2:'#3a6e2e',domain:'www.bankbsi.co.id'},
 
   // ── Bank Syariah ──
-  btnsyariah:   {color:'#0069AC',c2:'#005088',domain:'btnsyariah.co.id'},
-  btpnsyariah:  {color:'#7C6A55',c2:'#615340',domain:'btpnsyariah.co.id'},
-  bcasyariah:   {color:'#0060AF',c2:'#004d8c',domain:'bcasyariah.co.id'},
-  bcadigital:   {color:'#0060AF',c2:'#004d8c',domain:'bcadigital.co.id'},
-  megasyariah:  {color:'#004B93',c2:'#003870',domain:'megasyariah.co.id'},
-  danamonsyariah:{color:'#046148',c2:'#034a37',domain:'danamon.co.id'},
-  cimbniagasyariah:{color:'#6A1F1D',c2:'#521816',domain:'cimbniaga.co.id'},
-  bukopinsyariah:{color:'#59A544',c2:'#468336',domain:'www.kbbukopinsyariah.com'},
-  sinarmassyariah:{color:'#009035',c2:'#00722a',domain:'banksinarmas.com',isSquare:true},
-  victoriasyariah:{color:'#7CB342',c2:'#639035',domain:'bankbsn.co.id'},
-  nanobanksyariah:{color:'#002657',c2:'#001c42',domain:'nanobanksyariah.id'},
-  ntbsyariah: {color:'#0B6E45',c2:'#095636',domain:'www.bankntbsyariah.co.id'},
-  panindubaisyariah:{color:'#2171B5',c2:'#1a5a91',domain:'ibb.pdsb.co.id'},
-  paninsyariah:{color:'#006F39',c2:'#00542b',domain:'paninbanksyariah.co.id'},
+  bcasyariah:{color:'#005EB8',c2:'#004a9e',domain:'www.bcasyariah.co.id'},
+  btnsyariah:{color:'#003580',c2:'#002860',domain:'www.btn.co.id'},
+  btpnsyariah:{color:'#E30613',c2:'#b80510',domain:'www.btpnsyariah.com'},
+  bukopinsyariah:{color:'#E30613',c2:'#b80510',domain:'www.syariahbukopin.co.id'},
+  danamonsyariah:{color:'#EE3124',c2:'#c0271e',domain:'www.danamon.co.id'},
+  cimbniagasyariah:{color:'#C00000',c2:'#960000',domain:'www.cimbniaga.co.id'},
+  megasyariah:{color:'#E31E24',c2:'#b5181d',domain:'www.bms.co.id'},
+  muamalat:  {color:'#6EB63B',c2:'#579030',domain:'www.bankmuamalat.co.id'},
+  nanobanksyariah:{color:'#004B87',c2:'#003a6b',domain:'www.nanobank.co.id'},
+  ntbsyariah:{color:'#006B3F',c2:'#00552f',domain:'www.bankntbsyariah.co.id'},
+  panindubaisyariah:{color:'#005AB2',c2:'#00478c',domain:'www.banksyariah.co.id'},
+  sinarmassyariah:{color:'#0070B8',c2:'#005a93',domain:'www.sinarmassyariah.co.id'},
+  victoriasyariah:{color:'#003087',c2:'#00256b',domain:'www.bankvictoriasyariah.co.id'},
 
-  // ── Bank Regional ──
-  dki:       {color:'#2E2524',c2:'#1f1918',domain:'bankdki.co.id',logoScale:1.8},
-  jakarta:   {color:'#1A1A1A',c2:'#0d0d0d',domain:'bankjakarta.co.id',logoScale:1.6},
-  ntt:       {color:'#00A550',c2:'#00823f',domain:'bpdntt.co.id',logoScale:1.6},
-  nagari:    {color:'#2E2524',c2:'#1f1918',domain:'banknagari.co.id',logoScale:1.8},
-  sultra:    {color:'#1565C0',c2:'#104e99',domain:'banksultra.co.id',isSquare:true,logoScale:1.8},
-  sumsel:    {color:'#0077B3',c2:'#005c8c',domain:'banksumsel.co.id',isSquare:true,logoScale:1.8},
-  sumut:     {color:'#0D47A1',c2:'#0a3780',domain:'banksumut.co.id',isSquare:true,logoScale:2.0},
-  bws:       {color:'#0068AC',c2:'#005088',domain:'bankbws.co.id',logoScale:1.6},
-  panin:     {color:'#004689',c2:'#003466',domain:'panin.co.id',slug:'paninbank',logoScale:1.6},
-  paninbank: {color:'#007DC5',c2:'#00639d',domain:'panin.co.id',logoScale:1.6},
+  // ── Bank Swasta Nasional ──
+  bukopin:   {color:'#E30613',c2:'#b80510',domain:'www.bukopin.co.id'},
+  danamon:   {color:'#EE3124',c2:'#c0271e',domain:'www.danamon.co.id'},
+  cimbniaga: {color:'#C00000',c2:'#960000',domain:'www.cimbniaga.co.id'},
+  paninbank: {color:'#005AB2',c2:'#00478c',domain:'www.panin.co.id'},
+  permatabank:{color:'#AF1F23',c2:'#8c191d',domain:'www.permatabank.com'},
+  maybank:   {color:'#FFCC00',c2:'#e6b800',domain:'www.maybank.co.id'},
+  mega:      {color:'#E31E24',c2:'#b5181d',domain:'www.bankmega.com'},
+  sinarmas:  {color:'#0070B8',c2:'#005a93',domain:'www.banksinarmas.com'},
+  ocbcnisp:  {color:'#E31E24',c2:'#b80510',domain:'www.ocbcnisp.com'},
+  maspion:   {color:'#003580',c2:'#002860',domain:'www.bankmaspion.co.id'},
+  mestika:   {color:'#C8102E',c2:'#a00d25',domain:'www.bankmestika.co.id'},
+  nagari:    {color:'#1A5276',c2:'#154360',domain:'www.banknagari.co.id'},
+  nobubank:  {color:'#002D72',c2:'#002460',domain:'www.nobubank.com'},
+  mncbank:   {color:'#003087',c2:'#00256b',domain:'www.mncbank.co.id'},
+  victoria:  {color:'#003087',c2:'#00256b',domain:'www.victoriabank.co.id'},
+  capital:   {color:'#002D72',c2:'#002460',domain:'www.bankCapital.co.id'},
+  primabank: {color:'#003087',c2:'#00256b',domain:'www.bankprima.co.id'},
+  ina:       {color:'#E31E24',c2:'#b5181d',domain:'www.bankina.co.id'},
+  indexselindo:{color:'#003580',c2:'#002860',domain:'www.bankindex.co.id'},
+  bumiartha: {color:'#003D88',c2:'#002d68',domain:'www.bumiartha.co.id'},
+  bws:       {color:'#003580',c2:'#002860',domain:'www.bankws.co.id'},
+  ntt:       {color:'#003580',c2:'#002860',domain:'www.bankntt.co.id'},
+  sultra:    {color:'#003580',c2:'#002860',domain:'www.banksultra.co.id'},
+  sumsel:    {color:'#003580',c2:'#002860',domain:'www.banksumselbabel.co.id'},
+  sumut:     {color:'#003580',c2:'#002860',domain:'www.banksumut.co.id'},
+  ganesha:   {color:'#003580',c2:'#002860',domain:'www.bankganesha.co.id'},
+  regionalbank:{color:'#003580',c2:'#002860',domain:'www.regionalbank.co.id'},
+  privatebank:{color:'#003580',c2:'#002860',domain:'www.privatbank.co.id'},
+  sahabatsampoerna:{color:'#003D88',c2:'#002d68',domain:'www.banksahabat.com'},
+  dki:       {color:'#1A5276',c2:'#154360',domain:'www.bankdki.co.id'},
+  jakarta:   {color:'#1A5276',c2:'#154360',domain:'www.bankjakarta.co.id'},
+  mas:       {color:'#003580',c2:'#002860',domain:'www.bankmas.co.id'},
+  jago:      {color:'#FF6040',c2:'#e64d2e',domain:'www.jago.com'},
+  raya:      {color:'#0081C9',c2:'#0068a5',domain:'www.bankraya.co.id'},
+  neo:       {color:'#9B59B6',c2:'#7d489b',domain:'www.neo.co.id'},
+  hibank:    {color:'#001F5B',c2:'#001547',domain:'www.hibank.co.id'},
+  superbank: {color:'#4B1EAA',c2:'#3a1887',domain:'www.superbank.id'},
+  saqu:      {color:'#2F6EEB',c2:'#2458c0',domain:'www.saqu.com'},
+  salutgo:   {color:'#00A86B',c2:'#008556',domain:'www.salutgo.id'},
+  okbank:    {color:'#004B87',c2:'#003a6b',domain:'www.okbank.id'},
+  blu:       {color:'#002D72',c2:'#002460',domain:'www.blubybcadigital.id'},
+  bcadigital:{color:'#005EB8',c2:'#004a9e',domain:'www.blubybcadigital.id'},
+  linebank:  {color:'#00C300',c2:'#009a00',domain:'www.linebank.co.id'},
+  krombank:  {color:'#002D72',c2:'#002460',domain:'www.krom.id'},
+  aladin:    {color:'#7B2D8B',c2:'#5e2269',domain:'aladinbank.id'},
+  seabank:   {color:'#EE2A24',c2:'#bf221d',domain:'www.seabank.co.id'},
 
   // ── Bank Asing ──
-  hsbc:      {color:'#DB0011',c2:'#b0000e',domain:'hsbc.co.id'},
-  dbs:       {color:'#E21836',c2:'#b81229',domain:'dbs.co.id'},
-  citibank:  {color:'#1C4882',c2:'#153868',domain:'citibank.co.id'},
-  commonwealthbank:{color:'#1A1A1A',c2:'#0d0d0d',domain:'commbank.co.id'},
-  anz:       {color:'#169CD4',c2:'#117ca9',domain:'anz.co.id'},
-  bnpparibas:{color:'#00915A',c2:'#007347',domain:'bnpparibas.co.id'},
-  bangkokbank:{color:'#1F4396',c2:'#183577',domain:'bangkokbank.co.id'},
-  icbc:      {color:'#CB0202',c2:'#a20101',domain:'icbc.co.id'},
-  ccbindonesia:{color:'#0066B1',c2:'#00518d',domain:'bankccbi.co.id'},
-  chinaconstructionbankindonesia:{color:'#0066B1',c2:'#00518d',domain:'bankccbi.co.id'},
-  ingbank:   {color:'#FF6600',c2:'#cc5200',domain:'ing.co.id'},
-  mizuho:    {color:'#183181',c2:'#122567',domain:'mizuhobank.co.id'},
-  mufg:      {color:'#E60000',c2:'#b80000',domain:'www.bk.mufg.jp'},
-  deutschebank:{color:'#0018A8',c2:'#001286',domain:'db.co.id'},
-  creditsuisse:{color:'#183964',c2:'#122c4e',domain:'credit-suisse.co.id'},
-  ctbcbank:  {color:'#107C79',c2:'#0c5f5d',domain:'www.ctbcbank.com'},
-  shinhanbank:{color:'#0046A6',c2:'#003785',domain:'shinhan.co.id'},
-  ibkbank:   {color:'#0055A2',c2:'#004381',domain:'ibkbank.co.id'},
-  hanabank:  {color:'#008A8B',c2:'#006d6e',domain:'hanabank.co.id'},
-  jtrustbank:{color:'#009EE3',c2:'#007fb5',domain:'jtrustbank.co.id'},
-  smbcindonesia:{color:'#134939',c2:'#0e372b',domain:'www.smbci.com',isSquare:true},
+  hsbc:      {color:'#DB0011',c2:'#b0000e',domain:'www.hsbc.co.id'},
+  citibank:  {color:'#003087',c2:'#00256b',domain:'www.citibank.co.id'},
+  dbs:       {color:'#DA1710',c2:'#ae120d',domain:'www.dbs.com'},
+  maybank2:  {color:'#FFCC00',c2:'#e6b800',domain:'www.maybank.co.id'},
+  anz:       {color:'#007DBA',c2:'#005f9a',domain:'www.anz.co.id'},
+  commonwealthbank:{color:'#F0A500',c2:'#c08400',domain:'www.commbank.co.id'},
+  deutschebank:{color:'#003087',c2:'#00256b',domain:'www.db.com'},
+  hanabank:  {color:'#009E60',c2:'#007d4d',domain:'www.koreaexim.or.id'},
+  ibkbank:   {color:'#003580',c2:'#002860',domain:'www.ibkbank.co.id'},
+  icbc:      {color:'#B30014',c2:'#8c0010',domain:'www.icbc.co.id'},
+  ingbank:   {color:'#FF6200',c2:'#cc4e00',domain:'www.ing.co.id'},
+  jtrustbank:{color:'#003087',c2:'#00256b',domain:'www.jtrustbank.co.id'},
+  mizuho:    {color:'#003087',c2:'#00256b',domain:'www.mizuhobank.co.id'},
+  mufg:      {color:'#E60012',c2:'#b8000e',domain:'www.mufg.jp'},
+  bnpparibas:{color:'#009C77',c2:'#007a5f',domain:'www.bnpparibas.co.id'},
+  shinhanbank:{color:'#E31E24',c2:'#b5181d',domain:'www.shinhanbank.co.id'},
+  smbcindonesia:{color:'#003087',c2:'#00256b',domain:'www.smbc.co.id'},
+  ctbcbank:  {color:'#007DBA',c2:'#005f9a',domain:'www.ctbcbank.co.id'},
+  bangkokbank:{color:'#1F4E79',c2:'#163d60',domain:'www.bangkokbank.co.id'},
+  ccbindonesia:{color:'#B30738',c2:'#8f062d',domain:'www.ccb.co.id'},
+  chinaconstructionbankindonesia:{color:'#B30738',c2:'#8f062d',domain:'www.ccb.co.id'},
+  creditsuisse:{color:'#003087',c2:'#00256b',domain:'www.credit-suisse.com'},
   ofamerica: {color:'#EE2A24',c2:'#bf221d',domain:'bankofamerica.co.id'},
   ofchina:   {color:'#B30738',c2:'#8f062d',domain:'bankofchina.co.id'},
   ofindia:   {color:'#EE7A00',c2:'#bf6200',domain:'boiindonesia.co.id'},
@@ -158,70 +139,56 @@ const SVG_FILES = [
   'sultra','sumsel','sumut','superbank','victoria','victoriasyariah'
 ];
 
-// ── FAVICON CACHE (localStorage persistent) ──
-const _FAV_CACHE_KEY = 'laksa_fav_cache_v4';
-let _favCache = {};
-try { _favCache = JSON.parse(localStorage.getItem(_FAV_CACHE_KEY) || '{}'); } catch {}
+// ── LOGO SYSTEM ──
+// Strategi deteksi globe: Google selalu mengembalikan 200 OK + PNG 16x16
+// saat favicon tidak ditemukan. Favicon asli selalu > 16px.
 
-window._loadBankLogo = async function(img) {
-  if (img.dataset.loaded === '1') return;
-  img.dataset.loaded = '1';
+function _showInit(img, fbClass) {
+  img.style.display = 'none';
+  const fb = img.nextElementSibling;
+  if (fb && fb.classList.contains(fbClass)) fb.style.display = 'flex';
+}
 
+// Dipanggil saat gambar berhasil load
+window._logoLoad = function(img) {
+  const fbClass = img.dataset.fbClass;
+  const state = img.dataset.state || 'init';
   const useFav = img.dataset.faviconMode === 'true';
-  const svgSrc = img.dataset.svgSrc;
-  const favDom = img.dataset.fdom;
-  const initClass = img.dataset.fbClass;
-  const isGuessed = img.dataset.guessed === 'true';
 
-  const showInit = () => {
-    img.style.display = 'none';
-    if (img.nextElementSibling && img.nextElementSibling.classList.contains(initClass)) {
-      img.nextElementSibling.style.display = 'flex';
+  // Saat loading favicon (detail=init, dashboard=fav), cek apakah globe (16x16)
+  const loadingFav = (useFav && state === 'init') || (!useFav && state === 'fav');
+  if (loadingFav && img.naturalWidth <= 16) {
+    // Globe Google terdeteksi → coba SVG
+    const svgSrc = img.dataset.svgFallback;
+    if (useFav && svgSrc) {
+      img.dataset.state = 'svg';
+      img.src = svgSrc;
+    } else {
+      _showInit(img, fbClass);
     }
-  };
-
-  const fetchFav = async (domain) => {
-    if (!domain) return null;
-    if (_favCache[domain]) return _favCache[domain];
-    try {
-      const res = await fetch(`https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${domain}&size=128`);
-      if (!res.ok) return null;
-      const blob = await res.blob();
-      if (blob.size <= 750) return null; // Tolak default broken globe dari Google (~726 bytes)
-      return await new Promise(resolve => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          _favCache[domain] = reader.result;
-          try { localStorage.setItem(_FAV_CACHE_KEY, JSON.stringify(_favCache)); } catch{}
-          resolve(reader.result);
-        };
-        reader.onerror = () => resolve(null);
-        reader.readAsDataURL(blob);
-      });
-    } catch(e) { return null; }
-  };
-
-  const tryImg = (src) => new Promise(resolve => {
-    if (!src) return resolve(false);
-    const temp = new Image();
-    temp.onload = () => resolve(true);
-    temp.onerror = () => resolve(false);
-    temp.src = src;
-  });
-
-  if (useFav) {
-    let fav = await fetchFav(favDom);
-    if (!fav && isGuessed && favDom && favDom.endsWith('.co.id')) fav = await fetchFav(favDom.replace('.co.id', '.com'));
-    if (fav) { img.src = fav; return; }
-    if (await tryImg(svgSrc)) { img.src = svgSrc; return; }
-    showInit();
-  } else {
-    if (await tryImg(svgSrc)) { img.src = svgSrc; return; }
-    let fav = await fetchFav(favDom);
-    if (!fav && isGuessed && favDom && favDom.endsWith('.co.id')) fav = await fetchFav(favDom.replace('.co.id', '.com'));
-    if (fav) { img.src = fav; return; }
-    showInit();
   }
+  // Gambar valid → tampilkan otomatis (browser default behavior)
+};
+
+// Dipanggil saat gambar gagal load (file tidak ada / HTTP error)
+window._logoErr = function(img) {
+  const fbClass = img.dataset.fbClass;
+  const state = img.dataset.state || 'init';
+  const useFav = img.dataset.faviconMode === 'true';
+
+  if (state === 'init') {
+    if (useFav) {
+      // Detail mode: favicon HTTP error → coba SVG
+      const svgSrc = img.dataset.svgFallback;
+      if (svgSrc) { img.dataset.state = 'svg'; img.src = svgSrc; return; }
+    } else {
+      // Dashboard mode: SVG tidak ada → coba favicon
+      const favUrl = img.dataset.fav;
+      if (favUrl) { img.dataset.state = 'fav'; img.src = favUrl; return; }
+    }
+  }
+  // Semua opsi habis → inisial teks
+  _showInit(img, fbClass);
 };
 
 // ── FUNGSI DETEKSI BANK ──
@@ -290,12 +257,14 @@ const detBank = (name) => {
   if (/dompet|tunai|cash|wallet|kas/i.test(n))
     return { color: '#5c6ac4', c2: '#4355b9', domain: null, isWallet: true, slug: nClean };
 
-  // 6. Fallback — tetap set slug agar getLogoHtml bisa mencoba load SVG
+  // 6. Fallback
   const slug = nClean || 'unknown';
   return { color: null, c2: null, domain: slug + '.co.id', guessed: true, slug: slug };
 };
 
 // ⚡ FUNGSI RENDER LOGO ⚡
+// Dashboard (useFavicon=false): SVG → Favicon (globe check) → Inisial
+// Detail   (useFavicon=true) : Favicon (globe check) → SVG → Inisial
 function getLogoHtml(accName, b, imgClass, fbClass, imgStyle = '', useFavicon = false) {
   const init = (accName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 3) || '?').toUpperCase();
   const slug = b && b.slug ? b.slug : (b && b.domain ? b.domain.split('.')[0] : null);
@@ -309,12 +278,25 @@ function getLogoHtml(accName, b, imgClass, fbClass, imgStyle = '', useFavicon = 
 
   const svgSrc = `Banks%20Logo/${slug}.svg`;
   const favDomain = domain || (slug + '.co.id');
-  const isGuessed = !domain;
-  const blankGif = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
+  // fallback_opts=TYPE,SIZE,URL → Google selalu HTTP 200.
+  // Saat favicon tidak ada → PNG 16x16 (globe) → ditolak via naturalWidth check.
+  // Saat favicon ada → PNG ukuran asli (>16px) → diterima.
+  const favUrl = (b && b.favicon)
+    ? b.favicon
+    : `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${favDomain}&size=128`;
 
-  return `<img class="${imgClass}" src="${blankGif}" alt="" style="${finalStyle}"
-    data-svg-src="${svgSrc}" data-fdom="${favDomain}" data-guessed="${isGuessed}" 
-    data-favicon-mode="${useFavicon}" data-fb-class="${fbClass}"
-    onload="window._loadBankLogo(this)" />
+  const handlers = `onload="window._logoLoad(this)" onerror="window._logoErr(this)"`;
+  const commonData = `data-svg-fallback="${svgSrc}" data-fb-class="${fbClass}" data-favicon-mode="${useFavicon}"`;
+
+  if (!useFavicon) {
+    // Dashboard: mulai dari SVG, fallback ke favicon jika SVG tidak ada
+    return `<img class="${imgClass}" src="${svgSrc}" alt="" style="${finalStyle}"
+      data-fav="${favUrl}" ${commonData} ${handlers}/>
+      <div class="${fbClass}" style="display:none">${init}</div>`;
+  }
+
+  // Detail: mulai dari favicon, globe check via naturalWidth, fallback ke SVG
+  return `<img class="${imgClass}" src="${favUrl}" alt="" style="${finalStyle}"
+    ${commonData} ${handlers}/>
     <div class="${fbClass}" style="display:none">${init}</div>`;
 }
