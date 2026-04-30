@@ -160,7 +160,7 @@ const SVG_FILES = [
 
 // ── FAVICON CACHE (localStorage persistent) ──
 // Menyimpan favicon sebagai base64 data URL agar tidak perlu fetch ulang
-const _FAV_CACHE_KEY = 'laksa_fav_cache';
+const _FAV_CACHE_KEY = 'laksa_fav_cache_v2';
 let _favCache = {};
 try { _favCache = JSON.parse(localStorage.getItem(_FAV_CACHE_KEY) || '{}'); } catch {}
 
