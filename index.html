@@ -7194,7 +7194,12 @@
       const type = el('txType').value; if (type !== 'all') txs = txs.filter(t => t.type === type);
       const cat = el('txCat').value; if (cat !== 'all') txs = txs.filter(t => t.category_id === cat);
       if (mon) txs = txs.filter(t => mKey(t.date) === mon);
-      txs.sort((a, b) => { let va = a[sortF], vb = b[sortF]; if (sortF === 'amount') { va = +va; vb = +vb; } else { va = String(va); vb = String(vb); } return sortA ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1); });
+      txs.sort((a, b) => { 
+        let va = a[sortF], vb = b[sortF]; 
+        if (sortF === 'amount') { va = +va; vb = +vb; } else { va = String(va || ''); vb = String(vb || ''); } 
+        if (va === vb) return (b.created_at || b.id).localeCompare(a.created_at || a.id);
+        return sortA ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1); 
+      });
       el('txSub').textContent = txs.length + ' transaksi ditemukan';
       const tot = Math.max(1, Math.ceil(txs.length / TX_PER)); if (txPg > tot) txPg = tot;
       renderTxTbl(txs.slice((txPg - 1) * TX_PER, txPg * TX_PER), txs.length === 0);
