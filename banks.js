@@ -159,71 +159,68 @@ const SVG_FILES = [
 ];
 
 // ── FAVICON CACHE (localStorage persistent) ──
-// Menyimpan favicon sebagai base64 data URL agar tidak perlu fetch ulang
-const _FAV_CACHE_KEY = 'laksa_fav_cache_v3';
+const _FAV_CACHE_KEY = 'laksa_fav_cache_v4';
 let _favCache = {};
 try { _favCache = JSON.parse(localStorage.getItem(_FAV_CACHE_KEY) || '{}'); } catch {}
 
-// Simpan favicon ke cache setelah berhasil di-fetch
-function _cacheFavicon(cacheKey, url) {
-  if (_favCache[cacheKey]) return; // sudah di-cache, skip
-  fetch(url)
-    .then(r => { if (!r.ok) throw new Error('fetch fail'); return r.blob(); })
-    .then(blob => new Promise((resolve, reject) => {
-      const fr = new FileReader();
-      fr.onload  = () => resolve(fr.result);
-      fr.onerror = () => reject();
-      fr.readAsDataURL(blob);
-    }))
-    .then(dataUrl => {
-      _favCache[cacheKey] = dataUrl;
-      try { localStorage.setItem(_FAV_CACHE_KEY, JSON.stringify(_favCache)); } catch {}
-    })
-    .catch(() => {}); // silent fail, biarkan Google favicon tetap tampil via img src
-}
+window._loadBankLogo = async function(img) {
+  if (img.dataset.loaded === '1') return;
+  img.dataset.loaded = '1';
 
-// Global handler untuk favicon fallback berlapis (SVG -> .co.id -> .com -> inisial)
-window._handleLogoError = function(img, scaleStyle, fbClass) {
-  const state = parseInt(img.dataset.errState || '0');
+  const useFav = img.dataset.faviconMode === 'true';
+  const svgSrc = img.dataset.svgSrc;
   const favDom = img.dataset.fdom;
-  const isFaviconMode = img.dataset.faviconMode === 'true';
-  const guessed = img.dataset.guessed === 'true';
+  const initClass = img.dataset.fbClass;
+  const isGuessed = img.dataset.guessed === 'true';
 
-  if (state === 0 && !isFaviconMode) {
-    // Dashboard mode: SVG failed, fallback to Favicon (.co.id atau domain utama)
-    img.dataset.errState = '1';
-    img.src = img.dataset.fav;
-    img.style.transform = scaleStyle;
-    return;
-  }
-
-  if ((state === 1 && !isFaviconMode) || (state === 0 && isFaviconMode)) {
-    // Favicon failed. Jika kita menebak domain sebagai .co.id, coba lagi dengan .com
-    if (guessed && favDom && favDom.endsWith('.co.id')) {
-      img.dataset.errState = '2';
-      const newDom = favDom.substring(0, favDom.length - 6) + '.com';
-      img.dataset.fdom = newDom;
-      img.src = `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&url=http://${newDom}&size=128`;
-      return;
+  const showInit = () => {
+    img.style.display = 'none';
+    if (img.nextElementSibling && img.nextElementSibling.classList.contains(initClass)) {
+      img.nextElementSibling.style.display = 'flex';
     }
-  }
+  };
 
-  // Jika Favicon (dan fallback .com) sudah gagal, dan ini adalah Header Detail Bank (isFaviconMode)
-  // Kita coba load file SVG (sebagai penyelamat terakhir) sebelum menampilkan teks inisial!
-  if (isFaviconMode && state <= 2) {
-    const svgFallbackUrl = img.dataset.svgFallback;
-    if (svgFallbackUrl) {
-      img.dataset.errState = '3';
-      img.src = svgFallbackUrl;
-      img.style.transform = scaleStyle;
-      return;
-    }
-  }
+  const fetchFav = async (domain) => {
+    if (!domain) return null;
+    if (_favCache[domain]) return _favCache[domain];
+    try {
+      const res = await fetch(`https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${domain}&size=128`);
+      if (!res.ok) return null;
+      const blob = await res.blob();
+      if (blob.size <= 750) return null; // Tolak default broken globe dari Google (~726 bytes)
+      return await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          _favCache[domain] = reader.result;
+          try { localStorage.setItem(_FAV_CACHE_KEY, JSON.stringify(_favCache)); } catch{}
+          resolve(reader.result);
+        };
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(blob);
+      });
+    } catch(e) { return null; }
+  };
 
-  // Semua layer gagal, tampilkan inisial
-  img.style.display = 'none';
-  if (img.nextElementSibling && img.nextElementSibling.classList.contains(fbClass)) {
-    img.nextElementSibling.style.display = 'flex';
+  const tryImg = (src) => new Promise(resolve => {
+    if (!src) return resolve(false);
+    const temp = new Image();
+    temp.onload = () => resolve(true);
+    temp.onerror = () => resolve(false);
+    temp.src = src;
+  });
+
+  if (useFav) {
+    let fav = await fetchFav(favDom);
+    if (!fav && isGuessed && favDom && favDom.endsWith('.co.id')) fav = await fetchFav(favDom.replace('.co.id', '.com'));
+    if (fav) { img.src = fav; return; }
+    if (await tryImg(svgSrc)) { img.src = svgSrc; return; }
+    showInit();
+  } else {
+    if (await tryImg(svgSrc)) { img.src = svgSrc; return; }
+    let fav = await fetchFav(favDom);
+    if (!fav && isGuessed && favDom && favDom.endsWith('.co.id')) fav = await fetchFav(favDom.replace('.co.id', '.com'));
+    if (fav) { img.src = fav; return; }
+    showInit();
   }
 };
 
@@ -299,9 +296,6 @@ const detBank = (name) => {
 };
 
 // ⚡ FUNGSI RENDER LOGO ⚡
-// Fallback berlapis 3-tier:
-//   useFavicon=false (kartu rekening):  SVG lokal → inisial teks
-//   useFavicon=true  (detail rekening): SVG lokal → Google favicon → inisial teks
 function getLogoHtml(accName, b, imgClass, fbClass, imgStyle = '', useFavicon = false) {
   const init = (accName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 3) || '?').toUpperCase();
   const slug = b && b.slug ? b.slug : (b && b.domain ? b.domain.split('.')[0] : null);
@@ -309,38 +303,18 @@ function getLogoHtml(accName, b, imgClass, fbClass, imgStyle = '', useFavicon = 
 
   if (!slug && !domain) return `<div class="${fbClass}" style="display:flex">${init}</div>`;
 
-  // Per-bank scale: setiap bank punya zoom factor-nya sendiri
   const scale = (b && b.logoScale) ? b.logoScale : 1.45;
   const scaleStyle = `transform:scale(${scale});transform-origin:center center;`;
   const finalStyle = imgStyle ? `${imgStyle}${scaleStyle}` : scaleStyle;
 
   const svgSrc = `Banks%20Logo/${slug}.svg`;
   const favDomain = domain || (slug + '.co.id');
-  const favGoogleUrl = (b && b.favicon)
-    ? b.favicon
-    : `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&url=http://${favDomain}&size=128`;
-  const cachedFav = _favCache[favDomain];
-  const isGuessed = !domain; // Tandai jika domain hasil tebakan
+  const isGuessed = !domain;
+  const blankGif = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
 
-  if (!useFavicon) {
-    // ── Mode kartu rekening (dashboard): SVG lokal → Favicon → Inisial teks ──
-    const fbSrc = cachedFav || favGoogleUrl;
-    return `<img class="${imgClass}" src="${svgSrc}" alt="" style="${finalStyle}" data-fav="${fbSrc}" data-fdom="${favDomain}" data-guessed="${isGuessed}" data-favicon-mode="false"
-      onerror="window._handleLogoError(this, '${scaleStyle}', '${fbClass}');"/>
-      <div class="${fbClass}" style="display:none">${init}</div>`;
-  }
-
-  // ── Mode detail rekening: favicon (cached/Google) → inisial teks ──
-  if (cachedFav) {
-    return `<img class="${imgClass}" src="${cachedFav}" alt="" style="${finalStyle}"
-      onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
-      <div class="${fbClass}" style="display:none">${init}</div>`;
-  }
-
-  // Belum di-cache: fetch favicon dari Google, cache setelah berhasil load
-  // Jika gagal, sistem akan lari ke _handleLogoError dan mencoba meload SVG lokal (data-svg-fallback)
-  return `<img class="${imgClass}" src="${favGoogleUrl}" alt="" style="${finalStyle}" data-fdom="${favDomain}" data-guessed="${isGuessed}" data-favicon-mode="true" data-svg-fallback="${svgSrc}"
-    onload="_cacheFavicon(this.dataset.fdom, this.src);"
-    onerror="window._handleLogoError(this, '${scaleStyle}', '${fbClass}');"/>
+  return `<img class="${imgClass}" src="${blankGif}" alt="" style="${finalStyle}"
+    data-svg-src="${svgSrc}" data-fdom="${favDomain}" data-guessed="${isGuessed}" 
+    data-favicon-mode="${useFavicon}" data-fb-class="${fbClass}"
+    onload="window._loadBankLogo(this)" />
     <div class="${fbClass}" style="display:none">${init}</div>`;
 }
