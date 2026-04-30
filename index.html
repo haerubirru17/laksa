@@ -7227,7 +7227,7 @@
           const sign = tx.type === 'income' ? '+' : tx.type === 'expense' ? '−' : '↔';
           const tc = tx.type === 'income' ? 'inc' : tx.type === 'expense' ? 'exp' : 'trf';
           const srcPip = tx.source === 'telegram' ? `<div class="txcl-pip"><svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012.18 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.15a16 16 0 006.29 6.29l1.51-1.52a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg></div>` : '';
-          const timeStr = tx.created_at ? new Date(tx.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '';
+          const timeStr = tx.created_at ? new Date(tx.created_at.replace(' ', 'T') + 'Z').toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '';
           html += `<li class="txcl-item" onclick="openTxDetail('${tx.id}')">
         <div class="txcl-ico-wrap">
           <div class="txcl-ico ${tc}">${tc === 'trf' ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>` : `<span style="font-size:13px">${catEmoji}</span>`}</div>
@@ -7329,7 +7329,7 @@
       const srcBadge = tx.source === 'telegram'
         ? `<span style="display:inline-flex;align-items:center;gap:.3rem;padding:.22rem .62rem;border-radius:99px;background:rgba(37,99,235,.1);border:1.5px solid rgba(37,99,235,.2);font-family:'JetBrains Mono',monospace;font-size:.65rem;font-weight:600;color:var(--accent)"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012.18 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.15a16 16 0 006.29 6.29l1.51-1.52a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>Telegram</span>`
         : `<span style="display:inline-flex;align-items:center;gap:.3rem;padding:.22rem .62rem;border-radius:99px;background:rgba(16,185,129,.08);border:1.5px solid rgba(16,185,129,.2);font-family:'JetBrains Mono',monospace;font-size:.65rem;font-weight:600;color:var(--income)"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Website</span>`;
-      const timeStr = tx.created_at ? new Date(tx.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '';
+      const timeStr = tx.created_at ? new Date(tx.created_at.replace(' ', 'T') + 'Z').toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '';
       const dateTimeStr = fDate(tx.date) + (timeStr ? ' · ' + timeStr : '');
       el('txSheet').innerHTML = `
     <div class="tx-sheet-handle"></div>
