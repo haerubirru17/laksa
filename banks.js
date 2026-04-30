@@ -41,6 +41,7 @@ const BANKS = {
   nobubank:  {color:'#E20613',c2:'#b5050f',domain:'nobubank.co.id'},
   primabank: {color:'#0D92D2',c2:'#0a74a8',domain:'primabank.co.id'},
   sahabatsampoerna:{color:'#CC0000',c2:'#a30000',domain:'sahabatsampoerna.co.id'},
+  maybank:   {color:'#FFC800',c2:'#E5B400',domain:'maybank.co.id'},
   okbank:    {color:'#3D2D3C',c2:'#2e2230',domain:'okbank.co.id'},
 
   // ── Bank Digital ──
@@ -77,7 +78,7 @@ const BANKS = {
   nanobanksyariah:{color:'#002657',c2:'#001c42',domain:'nanobanksyariah.co.id'},
   ntbsyariah: {color:'#0B6E45',c2:'#095636',domain:'ntbsyariah.co.id'},
   panindubaisyariah:{color:'#2171B5',c2:'#1a5a91',domain:'panindubaisyariah.co.id'},
-  paninsyariah:{color:'#006F39',c2:'#00542b',domain:'paninbanksyariah.co.id'},
+  paninsyariah:{color:'#006F39',c2:'#00542b',domain:'paninbanksyariah.co.id',slug:'paninbank'},
 
   // ── Bank Regional ──
   dki:       {color:'#2E2524',c2:'#1f1918',domain:'bankdki.co.id',logoScale:1.8},
@@ -88,7 +89,7 @@ const BANKS = {
   sumsel:    {color:'#0077B3',c2:'#005c8c',domain:'banksumsel.co.id',isSquare:true,logoScale:1.8},
   sumut:     {color:'#0D47A1',c2:'#0a3780',domain:'banksumut.co.id',isSquare:true,logoScale:2.0},
   bws:       {color:'#0068AC',c2:'#005088',domain:'bankbws.co.id',logoScale:1.6},
-  panin:     {color:'#004689',c2:'#003466',domain:'panin.co.id',logoScale:1.6},
+  panin:     {color:'#004689',c2:'#003466',domain:'panin.co.id',slug:'paninbank',logoScale:1.6},
   paninbank: {color:'#007DC5',c2:'#00639d',domain:'paninbank.co.id',logoScale:1.6},
 
   // ── Bank Asing ──
@@ -149,13 +150,13 @@ const SVG_FILES = [
   'ctbcbank','danamon','danamonsyariah','dbs','deutschebank','dki',
   'ganesha','hanabank','hibank','hsbc','ibkbank','icbc','ina','indexselindo',
   'ingbank','jago','jakarta','jasajakarta','jenius','jpmorganchaseandco',
-  'jtrustbank','krombank','linebank','mandiri','mas','maspion','mayora',
+  'jtrustbank','krombank','linebank','mandiri','mas','maspion','maybank','mayora',
   'mega','megasyariah','mestika','mizuho','mncbank','muamalat','mufg',
   'nagari','nanobanksyariah','neo','nobubank','ntbsyariah','ntt','ocbcnisp',
   'ofamerica','ofchina','ofindia','okbank','oub','paninbank',
-  'panindubaisyariah','permatabank','primabank','raya','resona',
-  'sahabatsampoerna','salutgo','saqu','sbi','seabank','shinhanbank',
-  'sinarmas','sinarmassyariah','smbcindonesia','standartcartered',
+  'panindubaisyariah','permatabank','primabank','privatebank','raya',
+  'regionalbank','resona','sahabatsampoerna','salutgo','saqu','sbi','seabank',
+  'shinhanbank','sinarmas','sinarmassyariah','smbcindonesia','standartcartered',
   'sultra','sumsel','sumut','superbank','victoria','victoriasyariah'
 ];
 
