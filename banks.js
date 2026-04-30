@@ -41,7 +41,7 @@ const BANKS = {
   nobubank:  {color:'#E20613',c2:'#b5050f',domain:'nobubank.co.id'},
   primabank: {color:'#0D92D2',c2:'#0a74a8',domain:'primabank.co.id'},
   sahabatsampoerna:{color:'#CC0000',c2:'#a30000',domain:'sahabatsampoerna.co.id'},
-  maybank:   {color:'#FFC800',c2:'#E5B400',domain:'maybank.co.id'},
+  maybank:   {color:'#FFC800',c2:'#E5B400',domain:'maybank.co.id',favicon:'https://www.google.com/s2/favicons?domain=maybank.co.id&sz=128'},
   okbank:    {color:'#3D2D3C',c2:'#2e2230',domain:'okbank.co.id'},
 
   // ── Bank Digital ──
@@ -78,7 +78,7 @@ const BANKS = {
   nanobanksyariah:{color:'#002657',c2:'#001c42',domain:'nanobanksyariah.co.id'},
   ntbsyariah: {color:'#0B6E45',c2:'#095636',domain:'ntbsyariah.co.id'},
   panindubaisyariah:{color:'#2171B5',c2:'#1a5a91',domain:'panindubaisyariah.co.id'},
-  paninsyariah:{color:'#006F39',c2:'#00542b',domain:'paninbanksyariah.co.id',slug:'paninbank'},
+  paninsyariah:{color:'#006F39',c2:'#00542b',domain:'paninbanksyariah.co.id'},
 
   // ── Bank Regional ──
   dki:       {color:'#2E2524',c2:'#1f1918',domain:'bankdki.co.id',logoScale:1.8},
