@@ -7101,7 +7101,7 @@
 
     function renderRecent(txs) {
       const list = el('recentList');
-      const r = [...txs].sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id)).slice(0, 5);
+      const r = [...txs].sort((a, b) => b.date.localeCompare(a.date) || (b.created_at || b.id).localeCompare(a.created_at || a.id)).slice(0, 5);
       if (!r.length) { list.innerHTML = '<div class="empty" style="padding:1rem"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".25"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg><p style="font-size:.76rem;margin-top:-.3rem">Belum ada transaksi</p></div>'; return; }
       list.innerHTML = r.map(tx => {
         const cat = catBy(tx.category_id);
@@ -9142,7 +9142,7 @@ Jika ada transaksi yang perlu dicatat, isi field "transaction":
       let txs = allTx.filter(t => t.account_id === accSheetId || t.to_acc_id === accSheetId);
       if (accSheetTab === 'in') txs = txs.filter(t => (t.type === 'income' && t.account_id === accSheetId) || (t.type === 'transfer' && t.to_acc_id === accSheetId));
       if (accSheetTab === 'out') txs = txs.filter(t => (t.type === 'expense' && t.account_id === accSheetId) || (t.type === 'transfer' && t.account_id === accSheetId && t.to_acc_id !== accSheetId));
-      txs = [...txs].sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+      txs = [...txs].sort((a, b) => b.date.localeCompare(a.date) || (b.created_at || b.id).localeCompare(a.created_at || a.id));
       if (!txs.length) { body.innerHTML = `<div class="empty" style="padding:2rem"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".3"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg><p>Tidak ada transaksi</p></div>`; return; }
       // Group by date
       const groups = {};
