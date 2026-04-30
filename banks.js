@@ -41,7 +41,7 @@ const BANKS = {
   nobubank:  {color:'#E20613',c2:'#b5050f',domain:'nobubank.co.id'},
   primabank: {color:'#0D92D2',c2:'#0a74a8',domain:'primabank.co.id'},
   sahabatsampoerna:{color:'#CC0000',c2:'#a30000',domain:'sahabatsampoerna.co.id'},
-  maybank:   {color:'#FFC800',c2:'#E5B400',domain:'maybank.co.id',favicon:'https://www.google.com/s2/favicons?domain=maybank.co.id&sz=128'},
+  maybank:   {color:'#FFC800',c2:'#E5B400',domain:'maybank.co.id'},
   okbank:    {color:'#3D2D3C',c2:'#2e2230',domain:'okbank.co.id'},
 
   // ── Bank Digital ──
@@ -50,8 +50,8 @@ const BANKS = {
   neo:       {color:'#FF9F00',c2:'#E68F00',domain:'bankneocommerce.co.id',logoScale:1.6},
   neobank:   {color:'#FF9F00',c2:'#E68F00',domain:'bankneocommerce.co.id',slug:'neo',logoScale:1.6},
   'bank neo':{color:'#FF9F00',c2:'#E68F00',domain:'bankneocommerce.co.id',slug:'neo',logoScale:1.6},
-  aladin:    {color:'#1B21CC',c2:'#1218a0',domain:'aladinbank.id',favicon:'https://aladinbank.id/favicon.ico',logoScale:1.5},
-  aladinbank:{color:'#1B21CC',c2:'#1218a0',domain:'aladinbank.id',slug:'aladin',favicon:'https://aladinbank.id/favicon.ico',logoScale:1.5},
+  aladin:    {color:'#1B21CC',c2:'#1218a0',domain:'aladinbank.id',logoScale:1.5},
+  aladinbank:{color:'#1B21CC',c2:'#1218a0',domain:'aladinbank.id',slug:'aladin',logoScale:1.5},
   krom:      {color:'#6936D3',c2:'#5527b8',domain:'krom.id',slug:'krombank',isSquare:true},
   krombank:  {color:'#6936D3',c2:'#5527b8',domain:'krom.id',isSquare:true},
   blu:       {color:'#00B4C5',c2:'#008f9c',domain:'blu.co.id',logoScale:1.5},
@@ -232,6 +232,9 @@ const detBank = (name) => {
 };
 
 // ⚡ FUNGSI RENDER LOGO ⚡
+// Fallback berlapis 3-tier:
+//   useFavicon=false (kartu rekening):  SVG lokal → inisial teks
+//   useFavicon=true  (detail rekening): SVG lokal → Google favicon → inisial teks
 function getLogoHtml(accName, b, imgClass, fbClass, imgStyle = '', useFavicon = false) {
   const init = (accName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 3) || '?').toUpperCase();
   const slug = b && b.slug ? b.slug : (b && b.domain ? b.domain.split('.')[0] : null);
@@ -239,21 +242,30 @@ function getLogoHtml(accName, b, imgClass, fbClass, imgStyle = '', useFavicon = 
 
   if (!slug && !domain) return `<div class="${fbClass}" style="display:flex">${init}</div>`;
 
-  let imgSrc = `Banks%20Logo/${slug}.svg`;
-  if (useFavicon) {
-    if (b && b.favicon) imgSrc = b.favicon;
-    else if (domain) imgSrc = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
-    else imgSrc = `https://www.google.com/s2/favicons?domain=${slug}.co.id&sz=128`;
-  }
-
   // Per-bank scale: setiap bank punya zoom factor-nya sendiri
   const scale = (b && b.logoScale) ? b.logoScale : 1.45;
   const scaleStyle = `transform:scale(${scale});transform-origin:center center;`;
   const finalStyle = imgStyle ? `${imgStyle}${scaleStyle}` : scaleStyle;
 
-  // Fallback berlapis: coba SVG lokal dulu, jika gagal tampilkan inisial teks
-  const fallbackSvg = `Banks%20Logo/${slug}.svg`;
-  return `<img class="${imgClass}" src="${imgSrc}" alt="" style="${finalStyle}" data-fb="${fallbackSvg}"
-    onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src=this.dataset.fb;}else{this.style.display='none';this.nextElementSibling.style.display='flex';}"/>
+  const svgSrc = `Banks%20Logo/${slug}.svg`;
+
+  if (!useFavicon) {
+    // ── Mode kartu rekening: SVG lokal → inisial teks ──
+    // Jika SVG gagal, langsung tampilkan inisial (tidak retry dengan URL yang sama)
+    return `<img class="${imgClass}" src="${svgSrc}" alt="" style="${finalStyle}"
+      onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
+      <div class="${fbClass}" style="display:none">${init}</div>`;
+  }
+
+  // ── Mode detail rekening: SVG lokal → favicon → inisial teks ──
+  // Prioritas favicon: b.favicon (custom) → Google favicon API
+  const favUrl = (b && b.favicon)
+    ? b.favicon
+    : domain
+      ? `https://www.google.com/s2/favicons?domain=${domain}&sz=128`
+      : `https://www.google.com/s2/favicons?domain=${slug}.co.id&sz=128`;
+
+  return `<img class="${imgClass}" src="${svgSrc}" alt="" style="${finalStyle}" data-fav="${favUrl}"
+    onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src=this.dataset.fav;}else{this.style.display='none';this.nextElementSibling.style.display='flex';}"/>
     <div class="${fbClass}" style="display:none">${init}</div>`;
 }
