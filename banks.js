@@ -160,6 +160,30 @@ const SVG_FILES = [
   'sultra','sumsel','sumut','superbank','victoria','victoriasyariah'
 ];
 
+// ── FAVICON CACHE (localStorage persistent) ──
+// Menyimpan favicon sebagai base64 data URL agar tidak perlu fetch ulang
+const _FAV_CACHE_KEY = 'laksa_fav_cache';
+let _favCache = {};
+try { _favCache = JSON.parse(localStorage.getItem(_FAV_CACHE_KEY) || '{}'); } catch {}
+
+// Simpan favicon ke cache setelah berhasil di-fetch
+function _cacheFavicon(cacheKey, url) {
+  if (_favCache[cacheKey]) return; // sudah di-cache, skip
+  fetch(url)
+    .then(r => { if (!r.ok) throw new Error('fetch fail'); return r.blob(); })
+    .then(blob => new Promise((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onload  = () => resolve(fr.result);
+      fr.onerror = () => reject();
+      fr.readAsDataURL(blob);
+    }))
+    .then(dataUrl => {
+      _favCache[cacheKey] = dataUrl;
+      try { localStorage.setItem(_FAV_CACHE_KEY, JSON.stringify(_favCache)); } catch {}
+    })
+    .catch(() => {}); // silent fail, biarkan Google favicon tetap tampil via img src
+}
+
 // ── FUNGSI DETEKSI BANK ──
 const detBank = (name) => {
   let n = (name || '').toLowerCase().trim();
@@ -251,21 +275,27 @@ function getLogoHtml(accName, b, imgClass, fbClass, imgStyle = '', useFavicon = 
 
   if (!useFavicon) {
     // ── Mode kartu rekening: SVG lokal → inisial teks ──
-    // Jika SVG gagal, langsung tampilkan inisial (tidak retry dengan URL yang sama)
     return `<img class="${imgClass}" src="${svgSrc}" alt="" style="${finalStyle}"
       onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
       <div class="${fbClass}" style="display:none">${init}</div>`;
   }
 
-  // ── Mode detail rekening: SVG lokal → favicon → inisial teks ──
-  // Prioritas favicon: b.favicon (custom) → Google favicon API
-  const favUrl = (b && b.favicon)
+  // ── Mode detail rekening: SVG lokal → favicon (cached/Google) → inisial teks ──
+  const favDomain = domain || (slug + '.co.id');
+  const favGoogleUrl = (b && b.favicon)
     ? b.favicon
-    : domain
-      ? `https://www.google.com/s2/favicons?domain=${domain}&sz=128`
-      : `https://www.google.com/s2/favicons?domain=${slug}.co.id&sz=128`;
+    : `https://www.google.com/s2/favicons?domain=${favDomain}&sz=128`;
 
-  return `<img class="${imgClass}" src="${svgSrc}" alt="" style="${finalStyle}" data-fav="${favUrl}"
-    onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src=this.dataset.fav;}else{this.style.display='none';this.nextElementSibling.style.display='flex';}"/>
+  // Cek cache localStorage — jika ada, gunakan langsung (instant, no network)
+  const cachedFav = _favCache[favDomain];
+  if (cachedFav) {
+    return `<img class="${imgClass}" src="${cachedFav}" alt="" style="${finalStyle}"
+      onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
+      <div class="${fbClass}" style="display:none">${init}</div>`;
+  }
+
+  // Belum di-cache: coba SVG dulu, jika gagal fetch Google favicon + cache hasilnya
+  return `<img class="${imgClass}" src="${svgSrc}" alt="" style="${finalStyle}" data-fav="${favGoogleUrl}" data-fdom="${favDomain}"
+    onerror="if(!this.dataset.tried){this.dataset.tried='1';var fu=this.dataset.fav;var fd=this.dataset.fdom;this.onload=function(){_cacheFavicon(fd,fu);};this.src=fu;}else{this.style.display='none';this.nextElementSibling.style.display='flex';}"/>
     <div class="${fbClass}" style="display:none">${init}</div>`;
 }
