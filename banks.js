@@ -160,7 +160,7 @@ const SVG_FILES = [
 
 // ── FAVICON CACHE (localStorage persistent) ──
 // Menyimpan favicon sebagai base64 data URL agar tidak perlu fetch ulang
-const _FAV_CACHE_KEY = 'laksa_fav_cache_v2';
+const _FAV_CACHE_KEY = 'laksa_fav_cache_v3';
 let _favCache = {};
 try { _favCache = JSON.parse(localStorage.getItem(_FAV_CACHE_KEY) || '{}'); } catch {}
 
@@ -203,7 +203,7 @@ window._handleLogoError = function(img, scaleStyle, fbClass) {
       img.dataset.errState = '2';
       const newDom = favDom.substring(0, favDom.length - 6) + '.com';
       img.dataset.fdom = newDom;
-      img.src = `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${newDom}&size=128`;
+      img.src = `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&url=http://${newDom}&size=128`;
       return;
     }
   }
@@ -318,7 +318,7 @@ function getLogoHtml(accName, b, imgClass, fbClass, imgStyle = '', useFavicon = 
   const favDomain = domain || (slug + '.co.id');
   const favGoogleUrl = (b && b.favicon)
     ? b.favicon
-    : `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${favDomain}&size=128`;
+    : `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&url=http://${favDomain}&size=128`;
   const cachedFav = _favCache[favDomain];
   const isGuessed = !domain; // Tandai jika domain hasil tebakan
 
