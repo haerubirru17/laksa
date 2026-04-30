@@ -7690,7 +7690,10 @@
       const s = getSet(); s.name = el('sName').value.trim() || 'Pengguna'; s.currency = el('sCurr').value;
       const activeTheme = document.documentElement.getAttribute('data-theme') || 'glass';
       s.theme = activeTheme;
-      sv(K.set, s); toast('Disimpan!', 'ok');
+      sv(K.set, s);
+      // Sync nama ke getProfile juga supaya AI chatbot baca nama yang benar
+      const p = getProfile(); if (p) { p.name = s.name; saveProfile(p); }
+      toast('Disimpan!', 'ok');
     }
     function renderAccList() {
       el('accList').innerHTML = getAccs().map(a => {
@@ -8598,8 +8601,8 @@
     });
 
     function aiWelcome() {
-      const s = getSet();
-      const name = s.name || 'Kamu';
+      const _prof = getProfile(); const _set = getSet();
+      const name = _prof?.name || _set.name || 'Kamu';
       const txs = getTx();
       const now = thisMon();
       const mTx = txs.filter(t => mKey(t.date) === now);
