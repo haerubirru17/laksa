@@ -1668,6 +1668,14 @@
       box-shadow: 0 1px 8px rgba(0, 0, 0, .15)
     }
 
+    @media(max-width:768px) {
+      .dc-logo-wrap {
+        width: 62px;
+        height: 34px;
+        border-radius: 5px;
+      }
+    }
+
     .dc-logo {
       width: 100%;
       height: 100%;
@@ -2991,7 +2999,8 @@
       font-size: .8rem;
       outline: none;
       transition: border-color .15s;
-      -webkit-appearance: none
+      -webkit-appearance: none;
+      appearance: none;
     }
 
     .finput.srch {
@@ -3689,7 +3698,8 @@
       font-size: .82rem;
       outline: none;
       transition: border-color .14s, background .14s;
-      -webkit-appearance: none
+      -webkit-appearance: none;
+      appearance: none;
     }
 
     .finp:focus {
@@ -4933,7 +4943,9 @@
       font-family: 'Inter', inherit;
       font-size: .82rem;
       outline: none;
-      transition: border-color .14s, -webkit-appearance:none;
+      transition: border-color .14s;
+      -webkit-appearance: none;
+      appearance: none;
       display: flex;
       align-items: center;
       gap: .52rem;
@@ -6637,7 +6649,11 @@
       'c12': `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
       'default': `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
     };
-    const getCatIcon = (id) => CAT_ICONS[id] || CAT_ICONS['default'];
+    const getCatIcon = (id) => {
+      const c = typeof getCats === 'function' ? getCats().find(x => x.id === id) : null;
+      if (c && c.emoji) return `<span style="font-size:1.1em;line-height:1;display:inline-flex;align-items:center;">${c.emoji}</span>`;
+      return CAT_ICONS[id] || CAT_ICONS['default'];
+    };
     // ── STATE ──
     let curPage = 'dashboard', txPg = 1, TX_PER = 15, sortF = 'date', sortA = false, cfDays = 7, curTxMonth = '';
     let fTimer = null, rData = null, rB64 = null;
@@ -7690,10 +7706,7 @@
       const s = getSet(); s.name = el('sName').value.trim() || 'Pengguna'; s.currency = el('sCurr').value;
       const activeTheme = document.documentElement.getAttribute('data-theme') || 'glass';
       s.theme = activeTheme;
-      sv(K.set, s);
-      // Sync nama ke getProfile juga supaya AI chatbot baca nama yang benar
-      const p = getProfile(); if (p) { p.name = s.name; saveProfile(p); }
-      toast('Disimpan!', 'ok');
+      sv(K.set, s); toast('Disimpan!', 'ok');
     }
     function renderAccList() {
       el('accList').innerHTML = getAccs().map(a => {
@@ -8601,8 +8614,8 @@
     });
 
     function aiWelcome() {
-      const _prof = getProfile(); const _set = getSet();
-      const name = _prof?.name || _set.name || 'Kamu';
+      const s = getSet();
+      const name = s.name || 'Kamu';
       const txs = getTx();
       const now = thisMon();
       const mTx = txs.filter(t => mKey(t.date) === now);
