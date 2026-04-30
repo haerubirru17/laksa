@@ -280,7 +280,8 @@ function getLogoHtml(accName, b, imgClass, fbClass, imgStyle = '', useFavicon = 
       <div class="${fbClass}" style="display:none">${init}</div>`;
   }
 
-  // ── Mode detail rekening: SVG lokal → favicon (cached/Google) → inisial teks ──
+  // ── Mode detail rekening: favicon (cached/Google) → inisial teks ──
+  // Langsung pakai favicon, bukan SVG (SVG hanya untuk kartu dashboard)
   const favDomain = domain || (slug + '.co.id');
   const favGoogleUrl = (b && b.favicon)
     ? b.favicon
@@ -294,8 +295,9 @@ function getLogoHtml(accName, b, imgClass, fbClass, imgStyle = '', useFavicon = 
       <div class="${fbClass}" style="display:none">${init}</div>`;
   }
 
-  // Belum di-cache: coba SVG dulu, jika gagal fetch Google favicon + cache hasilnya
-  return `<img class="${imgClass}" src="${svgSrc}" alt="" style="${finalStyle}" data-fav="${favGoogleUrl}" data-fdom="${favDomain}"
-    onerror="if(!this.dataset.tried){this.dataset.tried='1';var fu=this.dataset.fav;var fd=this.dataset.fdom;this.onload=function(){_cacheFavicon(fd,fu);};this.src=fu;}else{this.style.display='none';this.nextElementSibling.style.display='flex';}"/>
+  // Belum di-cache: fetch favicon dari Google, cache setelah berhasil load
+  return `<img class="${imgClass}" src="${favGoogleUrl}" alt="" style="${finalStyle}" data-fdom="${favDomain}"
+    onload="_cacheFavicon(this.dataset.fdom,'${favGoogleUrl}');"
+    onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
     <div class="${fbClass}" style="display:none">${init}</div>`;
 }
