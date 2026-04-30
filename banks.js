@@ -7,25 +7,25 @@
 // Warna diekstrak dari file SVG logo resmi masing-masing bank
 const BANKS = {
   // ── Bank BUMN ──
-  bca:       {color:'#003399',c2:'#00297a',domain:'bca.co.id'},
-  mandiri:   {color:'#003A70',c2:'#002a52',domain:'bankmandiri.co.id'},
-  bni:       {color:'#E55300',c2:'#b84200',domain:'bni.co.id'},
-  bri:       {color:'#00529C',c2:'#003d75',domain:'bri.co.id'},
-  bsi:       {color:'#00A39D',c2:'#007d78',domain:'bankbsi.co.id'},
-  btn:       {color:'#0069AB',c2:'#005088',domain:'btn.co.id'},
+  bca:       {color:'#003399',c2:'#00297a',domain:'bca.co.id',logoScale:1.5},
+  mandiri:   {color:'#003A70',c2:'#002a52',domain:'bankmandiri.co.id',logoScale:1.6},
+  bni:       {color:'#E55300',c2:'#b84200',domain:'bni.co.id',logoScale:1.8},
+  bri:       {color:'#00529C',c2:'#003d75',domain:'bri.co.id',logoScale:1.5},
+  bsi:       {color:'#00A39D',c2:'#007d78',domain:'bankbsi.co.id',logoScale:1.6},
+  btn:       {color:'#0069AB',c2:'#005088',domain:'btn.co.id',logoScale:1.5},
 
   // ── Bank Swasta Nasional ──
-  mega:      {color:'#003B7B',c2:'#002d5e',domain:'bankmega.com'},
-  danamon:   {color:'#046148',c2:'#034a37',domain:'danamon.co.id'},
-  permata:   {color:'#0064FF',c2:'#0050cc',domain:'permatabank.com',slug:'permatabank'},
-  permatabank:{color:'#0064FF',c2:'#0050cc',domain:'permatabank.com'},
-  cimb:      {color:'#790008',c2:'#5e0006',domain:'cimbniaga.co.id',slug:'cimbniaga'},
-  cimbniaga: {color:'#790008',c2:'#5e0006',domain:'cimbniaga.co.id'},
-  bukopin:   {color:'#005BAA',c2:'#004488',domain:'bukopin.co.id'},
-  sinarmas:  {color:'#1A1A2E',c2:'#0f0f1c',domain:'banksinarmas.com'},
-  muamalat:  {color:'#420655',c2:'#320440',domain:'bankmuamalat.co.id'},
-  ocbc:      {color:'#D10A10',c2:'#a5080d',domain:'ocbcnisp.com',slug:'ocbcnisp'},
-  ocbcnisp:  {color:'#D10A10',c2:'#a5080d',domain:'ocbcnisp.com'},
+  mega:      {color:'#003B7B',c2:'#002d5e',domain:'bankmega.com',logoScale:1.6},
+  danamon:   {color:'#046148',c2:'#034a37',domain:'danamon.co.id',logoScale:1.5},
+  permata:   {color:'#0064FF',c2:'#0050cc',domain:'permatabank.com',slug:'permatabank',logoScale:1.7},
+  permatabank:{color:'#0064FF',c2:'#0050cc',domain:'permatabank.com',logoScale:1.7},
+  cimb:      {color:'#790008',c2:'#5e0006',domain:'cimbniaga.co.id',slug:'cimbniaga',logoScale:1.5},
+  cimbniaga: {color:'#790008',c2:'#5e0006',domain:'cimbniaga.co.id',logoScale:1.5},
+  bukopin:   {color:'#005BAA',c2:'#004488',domain:'bukopin.co.id',logoScale:1.6},
+  sinarmas:  {color:'#1A1A2E',c2:'#0f0f1c',domain:'banksinarmas.com',logoScale:1.5},
+  muamalat:  {color:'#420655',c2:'#320440',domain:'bankmuamalat.co.id',logoScale:1.6},
+  ocbc:      {color:'#D10A10',c2:'#a5080d',domain:'ocbcnisp.com',slug:'ocbcnisp',logoScale:1.5},
+  ocbcnisp:  {color:'#D10A10',c2:'#a5080d',domain:'ocbcnisp.com',logoScale:1.5},
   victoria:  {color:'#C62828',c2:'#9e2020',domain:'bankvictoria.co.id'},
   capital:   {color:'#003058',c2:'#002240',domain:'bankcapital.co.id'},
   mestika:   {color:'#282D68',c2:'#1e2250',domain:'bankmestika.co.id'},
@@ -44,24 +44,24 @@ const BANKS = {
   okbank:    {color:'#3D2D3C',c2:'#2e2230',domain:'okbank.co.id'},
 
   // ── Bank Digital ──
-  jago:      {color:'#F28705',c2:'#d47000',domain:'jago.com'},
-  'bank jago':{color:'#F28705',c2:'#d47000',domain:'jago.com',slug:'jago'},
-  neo:       {color:'#FF9F00',c2:'#E68F00',domain:'bankneocommerce.co.id'},
-  neobank:   {color:'#FF9F00',c2:'#E68F00',domain:'bankneocommerce.co.id',slug:'neo'},
-  'bank neo':{color:'#FF9F00',c2:'#E68F00',domain:'bankneocommerce.co.id',slug:'neo'},
-  aladin:    {color:'#1B21CC',c2:'#1218a0',domain:'aladinbank.id',favicon:'https://aladinbank.id/favicon.ico'},
-  aladinbank:{color:'#1B21CC',c2:'#1218a0',domain:'aladinbank.id',slug:'aladin',favicon:'https://aladinbank.id/favicon.ico'},
+  jago:      {color:'#F28705',c2:'#d47000',domain:'jago.com',logoScale:1.4},
+  'bank jago':{color:'#F28705',c2:'#d47000',domain:'jago.com',slug:'jago',logoScale:1.4},
+  neo:       {color:'#FF9F00',c2:'#E68F00',domain:'bankneocommerce.co.id',logoScale:1.6},
+  neobank:   {color:'#FF9F00',c2:'#E68F00',domain:'bankneocommerce.co.id',slug:'neo',logoScale:1.6},
+  'bank neo':{color:'#FF9F00',c2:'#E68F00',domain:'bankneocommerce.co.id',slug:'neo',logoScale:1.6},
+  aladin:    {color:'#1B21CC',c2:'#1218a0',domain:'aladinbank.id',favicon:'https://aladinbank.id/favicon.ico',logoScale:1.5},
+  aladinbank:{color:'#1B21CC',c2:'#1218a0',domain:'aladinbank.id',slug:'aladin',favicon:'https://aladinbank.id/favicon.ico',logoScale:1.5},
   krom:      {color:'#6936D3',c2:'#5527b8',domain:'krom.id',slug:'krombank',isSquare:true},
   krombank:  {color:'#6936D3',c2:'#5527b8',domain:'krom.id',isSquare:true},
-  blu:       {color:'#00B4C5',c2:'#008f9c',domain:'blu.co.id'},
-  seabank:   {color:'#FFC53D',c2:'#E5B137',domain:'seabank.co.id'},
-  superbank: {color:'#00C450',c2:'#00A040',domain:'superbank.co.id'},
-  linebank:  {color:'#00C300',c2:'#009a00',domain:'linebank.co.id'},
-  hibank:    {color:'#3D3D3D',c2:'#2a2a2a',domain:'hibank.co.id'},
-  hi:        {color:'#3D3D3D',c2:'#2a2a2a',domain:'hibank.co.id',slug:'hibank'},
-  raya:      {color:'#FF6400',c2:'#cc5000',domain:'bankraya.co.id'},
-  saqu:      {color:'#4834D4',c2:'#3628a8',domain:'saqu.id'},
-  salutgo:   {color:'#2AA7DE',c2:'#2186b2',domain:'salutbank.co.id'},
+  blu:       {color:'#00B4C5',c2:'#008f9c',domain:'blu.co.id',logoScale:1.5},
+  seabank:   {color:'#FFC53D',c2:'#E5B137',domain:'seabank.co.id',logoScale:1.5},
+  superbank: {color:'#00C450',c2:'#00A040',domain:'superbank.co.id',logoScale:1.5},
+  linebank:  {color:'#00C300',c2:'#009a00',domain:'linebank.co.id',logoScale:1.5},
+  hibank:    {color:'#3D3D3D',c2:'#2a2a2a',domain:'hibank.co.id',logoScale:1.5},
+  hi:        {color:'#3D3D3D',c2:'#2a2a2a',domain:'hibank.co.id',slug:'hibank',logoScale:1.5},
+  raya:      {color:'#FF6400',c2:'#cc5000',domain:'bankraya.co.id',logoScale:1.5},
+  saqu:      {color:'#4834D4',c2:'#3628a8',domain:'saqu.id',logoScale:1.5},
+  salutgo:   {color:'#2AA7DE',c2:'#2186b2',domain:'salutbank.co.id',logoScale:1.5},
 
   // ── Bank Syariah ──
   btnsyariah:   {color:'#0069AC',c2:'#005088',domain:'btnsyariah.co.id'},
@@ -80,16 +80,16 @@ const BANKS = {
   paninsyariah:{color:'#006F39',c2:'#00542b',domain:'paninbanksyariah.co.id'},
 
   // ── Bank Regional ──
-  dki:       {color:'#2E2524',c2:'#1f1918',domain:'bankdki.co.id'},
-  jakarta:   {color:'#1A1A1A',c2:'#0d0d0d',domain:'bankjakarta.co.id'},
-  ntt:       {color:'#00A550',c2:'#00823f',domain:'bankntt.co.id'},
-  nagari:    {color:'#2E2524',c2:'#1f1918',domain:'banknagari.co.id'},
-  sultra:    {color:'#1565C0',c2:'#104e99',domain:'banksultra.co.id',isSquare:true},
-  sumsel:    {color:'#0077B3',c2:'#005c8c',domain:'banksumsel.co.id',isSquare:true},
-  sumut:     {color:'#0D47A1',c2:'#0a3780',domain:'banksumut.co.id',isSquare:true},
-  bws:       {color:'#0068AC',c2:'#005088',domain:'bankbws.co.id'},
-  panin:     {color:'#004689',c2:'#003466',domain:'panin.co.id'},
-  paninbank: {color:'#007DC5',c2:'#00639d',domain:'paninbank.co.id'},
+  dki:       {color:'#2E2524',c2:'#1f1918',domain:'bankdki.co.id',logoScale:1.8},
+  jakarta:   {color:'#1A1A1A',c2:'#0d0d0d',domain:'bankjakarta.co.id',logoScale:1.6},
+  ntt:       {color:'#00A550',c2:'#00823f',domain:'bankntt.co.id',logoScale:1.6},
+  nagari:    {color:'#2E2524',c2:'#1f1918',domain:'banknagari.co.id',logoScale:1.8},
+  sultra:    {color:'#1565C0',c2:'#104e99',domain:'banksultra.co.id',isSquare:true,logoScale:1.8},
+  sumsel:    {color:'#0077B3',c2:'#005c8c',domain:'banksumsel.co.id',isSquare:true,logoScale:1.8},
+  sumut:     {color:'#0D47A1',c2:'#0a3780',domain:'banksumut.co.id',isSquare:true,logoScale:2.0},
+  bws:       {color:'#0068AC',c2:'#005088',domain:'bankbws.co.id',logoScale:1.6},
+  panin:     {color:'#004689',c2:'#003466',domain:'panin.co.id',logoScale:1.6},
+  paninbank: {color:'#007DC5',c2:'#00639d',domain:'paninbank.co.id',logoScale:1.6},
 
   // ── Bank Asing ──
   hsbc:      {color:'#DB0011',c2:'#b0000e',domain:'hsbc.co.id'},
@@ -235,9 +235,9 @@ function getLogoHtml(accName, b, imgClass, fbClass, imgStyle = '', useFavicon = 
   const init = (accName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 3) || '?').toUpperCase();
   const slug = b && b.slug ? b.slug : (b && b.domain ? b.domain.split('.')[0] : null);
   const domain = b && b.domain ? b.domain : null;
-  
+
   if (!slug && !domain) return `<div class="${fbClass}" style="display:flex">${init}</div>`;
-  
+
   let imgSrc = `Banks%20Logo/${slug}.svg`;
   if (useFavicon) {
     if (b && b.favicon) imgSrc = b.favicon;
@@ -245,9 +245,14 @@ function getLogoHtml(accName, b, imgClass, fbClass, imgStyle = '', useFavicon = 
     else imgSrc = `https://www.google.com/s2/favicons?domain=${slug}.co.id&sz=128`;
   }
 
-  // Jika favicon error, fallback ke file SVG lokal dengan onerror berlapis
+  // Per-bank scale: setiap bank punya zoom factor-nya sendiri
+  const scale = (b && b.logoScale) ? b.logoScale : 1.45;
+  const scaleStyle = `transform:scale(${scale});transform-origin:center center;`;
+  const finalStyle = imgStyle ? `${imgStyle}${scaleStyle}` : scaleStyle;
+
+  // Fallback berlapis: coba SVG lokal dulu, jika gagal tampilkan inisial teks
   const fallbackSvg = `Banks%20Logo/${slug}.svg`;
-  return `<img class="${imgClass}" src="${imgSrc}" alt="" style="${imgStyle}"
-    onerror="if(this.src!=='${fallbackSvg}')this.src='${fallbackSvg}';else{this.style.display='none';this.nextElementSibling.style.display='flex';}"/>
+  return `<img class="${imgClass}" src="${imgSrc}" alt="" style="${finalStyle}" data-fb="${fallbackSvg}"
+    onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src=this.dataset.fb;}else{this.style.display='none';this.nextElementSibling.style.display='flex';}"/>
     <div class="${fbClass}" style="display:none">${init}</div>`;
 }
