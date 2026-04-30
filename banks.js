@@ -275,7 +275,7 @@ function getLogoHtml(accName, b, imgClass, fbClass, imgStyle = '', useFavicon = 
   const favDomain = domain || (slug + '.co.id');
   const favGoogleUrl = (b && b.favicon)
     ? b.favicon
-    : `https://www.google.com/s2/favicons?domain=${favDomain}&sz=128`;
+    : `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${favDomain}&size=128`;
   const cachedFav = _favCache[favDomain];
 
   if (!useFavicon) {
