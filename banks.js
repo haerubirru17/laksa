@@ -272,23 +272,23 @@ function getLogoHtml(accName, b, imgClass, fbClass, imgStyle = '', useFavicon = 
   const finalStyle = imgStyle ? `${imgStyle}${scaleStyle}` : scaleStyle;
 
   const svgSrc = `Banks%20Logo/${slug}.svg`;
+  const favDomain = domain || (slug + '.co.id');
+  const favGoogleUrl = (b && b.favicon)
+    ? b.favicon
+    : `https://www.google.com/s2/favicons?domain=${favDomain}&sz=128`;
+  const cachedFav = _favCache[favDomain];
 
   if (!useFavicon) {
-    // ── Mode kartu rekening: SVG lokal → inisial teks ──
-    return `<img class="${imgClass}" src="${svgSrc}" alt="" style="${finalStyle}"
-      onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
+    // ── Mode kartu rekening (dashboard): SVG lokal → Favicon → Inisial teks ──
+    // Jika SVG gagal, coba load favicon. Jika favicon gagal, baru inisial.
+    const fbSrc = cachedFav || favGoogleUrl;
+    return `<img class="${imgClass}" src="${svgSrc}" alt="" style="${finalStyle}" data-fav="${fbSrc}" data-fdom="${favDomain}"
+      onerror="if(!this.dataset.tried){this.dataset.tried='1';var fu=this.dataset.fav;var fd=this.dataset.fdom;if(fu.includes('google.com')){this.onload=function(){_cacheFavicon(fd,fu);};};this.src=fu;}else{this.style.display='none';this.nextElementSibling.style.display='flex';}"/>
       <div class="${fbClass}" style="display:none">${init}</div>`;
   }
 
   // ── Mode detail rekening: favicon (cached/Google) → inisial teks ──
   // Langsung pakai favicon, bukan SVG (SVG hanya untuk kartu dashboard)
-  const favDomain = domain || (slug + '.co.id');
-  const favGoogleUrl = (b && b.favicon)
-    ? b.favicon
-    : `https://www.google.com/s2/favicons?domain=${favDomain}&sz=128`;
-
-  // Cek cache localStorage — jika ada, gunakan langsung (instant, no network)
-  const cachedFav = _favCache[favDomain];
   if (cachedFav) {
     return `<img class="${imgClass}" src="${cachedFav}" alt="" style="${finalStyle}"
       onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/>
