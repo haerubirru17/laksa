@@ -987,7 +987,7 @@ function aiWelcome() {
     wMeta.innerHTML = `
           <div class="ai-wlc-meta-item">
             <div class="ai-wlc-meta-val neg">${exp > 0 ? '−' + fCur(exp) : fCur(0)}</div>
-            <div class="ai-wlc-meta-lbl">Keluar ${now.slice(5).replace('-', '/')}</div>
+            <div class="ai-wlc-meta-lbl">Keluar bln ini</div>
           </div>
           <div class="ai-wlc-meta-item">
             <div class="ai-wlc-meta-val">${accs.length}</div>
