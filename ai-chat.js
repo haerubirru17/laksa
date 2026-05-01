@@ -1294,7 +1294,7 @@ Aturan JSON:
         aiHistory.push({ role: 'assistant', content: answer });
 
         // Jika AI deteksi transaksi → tampilkan bubble konfirmasi
-        if (transaction && transaction.amount && transaction.account_name) {
+        if (transaction && transaction.amount && (transaction.account_name || (transaction.from_account_name && transaction.to_account_name))) {
           aiAppendTxConfirm(transaction);
         }
 
