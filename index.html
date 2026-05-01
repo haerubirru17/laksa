@@ -4792,7 +4792,7 @@
     .bill-card { background: var(--gs-1); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--gs-border); border-radius: 20px; padding: 1.1rem 1.25rem 1rem; position: relative; cursor: grab; user-select: none; will-change: transform; transition: all 0.3s ease; }
     .bill-card.overdue { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); box-shadow: 0 8px 32px rgba(239, 68, 68, 0.15), 0 2px 8px rgba(239, 68, 68, 0.08); }
     .bill-card.due-soon { background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.28); box-shadow: 0 8px 32px rgba(245, 158, 11, 0.15), 0 2px 8px rgba(245, 158, 11, 0.08); }
-    .bill-card.upcoming { background: rgba(34, 197, 120, 0.12); border-color: rgba(34, 197, 120, 0.2); box-shadow: 0 8px 32px rgba(34, 197, 120, 0.1), 0 2px 8px rgba(34, 197, 120, 0.06); }
+    .bill-card.upcoming { background: var(--gs-1); border-color: var(--gs-border); }
     .bill-card.paid { opacity: 0.65; cursor: default; }
     .card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
     .card-left { display: flex; align-items: center; gap: 10px; }
@@ -6797,21 +6797,22 @@
     function billDueStatus(bill) {
       if (bill.status === 'paid') return { cls: 'paid', label: 'Lunas', dotCls: 'paid' };
       const today = new Date(); today.setHours(0, 0, 0, 0);
-      // Hitung jatuh tempo bulan ini
       const y = today.getFullYear(), m = today.getMonth();
       const dueDay = bill.due_day || 1;
       let due = new Date(y, m, dueDay);
-      // Kalau tagihan sekali dan sudah punya due_date spesifik
       if (bill.due_type === 'once' && bill.due_date) {
-        due = new Date(bill.due_date + 'T00:00:00');
+        const [y2, m2, d2] = bill.due_date.split('-').map(Number);
+        due = new Date(y2, m2 - 1, d2);
       }
       const diffMs = due - today;
       const diffDays = Math.ceil(diffMs / 86400000);
       if (diffDays < 0) return { cls: 'overdue', label: `Lewat ${Math.abs(diffDays)} hari`, dotCls: 'overdue', due };
-      if (diffDays === 0) return { cls: 'due-soon', label: 'Hari ini!', dotCls: 'due-soon', due };
+      if (diffDays === 0) return { cls: 'overdue', label: 'Hari ini!', dotCls: 'overdue', due };
+      if (diffDays <= 3) return { cls: 'overdue', label: `${diffDays} hari lagi`, dotCls: 'overdue', due };
       if (diffDays <= 7) return { cls: 'due-soon', label: `${diffDays} hari lagi`, dotCls: 'due-soon', due };
       return { cls: 'upcoming', label: `${diffDays} hari lagi`, dotCls: 'upcoming', due };
     }
+
 
     function renderBills() {
       const bills = getBills(), grid = el('billGrid'), emp = el('billEmpty');
