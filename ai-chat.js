@@ -871,120 +871,120 @@ const AI_HTML = `  <!-- AI CHAT BUBBLE -->
 document.head.insertAdjacentHTML('beforeend', AI_STYLE);
 document.body.insertAdjacentHTML('beforeend', AI_HTML);
 
-    // ── AI CHAT (via Worker → Groq autochain) ──
-    // Model chain — Worker akan iterasi otomatis jika quota habis
-    const AI_CHAT_CHAIN = [
-      'llama-3.3-70b-versatile',
-      'meta-llama/llama-4-scout-17b-16e-instruct',
-      'qwen/qwen3-32b',
-      'llama-3.1-8b-instant'
-    ];
-    let aiOpen = false;
-    let aiHistory = [];
-    let aiTyping = false;
-    let aiLastPage = '';
-    let aiWelcomed = false;
+// ── AI CHAT (via Worker → Groq autochain) ──
+// Model chain — Worker akan iterasi otomatis jika quota habis
+const AI_CHAT_CHAIN = [
+  'llama-3.3-70b-versatile',
+  'meta-llama/llama-4-scout-17b-16e-instruct',
+  'qwen/qwen3-32b',
+  'llama-3.1-8b-instant'
+];
+let aiOpen = false;
+let aiHistory = [];
+let aiTyping = false;
+let aiLastPage = '';
+let aiWelcomed = false;
 
-    // Contextual suggestions per page
-    const AI_SUGS = {
-      dashboard: ['📊 Analisis keuangan bulan ini', '💸 Di mana aku paling boros?', '💡 Tips hemat untukku', '📈 Tren pengeluaranku'],
-      transactions: ['🔍 Transaksi terbesar bulan ini?', '📅 Pengeluaran minggu ini vs lalu', '🏷️ Kategori yang paling sering?', '💳 Rekening mana paling aktif?'],
-      budget: ['⚠️ Anggaran mana yang hampir habis?', '✅ Berapa yang berhasil aku hemat?', '📌 Kategori paling boros bulan ini?', '🎯 Sarankan batas anggaran untukku'],
-      goals: ['🏆 Target mana yang paling dekat?', '💰 Berapa lagi yang harus ditabung?', '📆 Kapan target ini bisa tercapai?', '🚀 Cara lebih cepat capai targetku?']
-    };
+// Contextual suggestions per page
+const AI_SUGS = {
+  dashboard: ['📊 Analisis keuangan bulan ini', '💸 Di mana aku paling boros?', '💡 Tips hemat untukku', '📈 Tren pengeluaranku'],
+  transactions: ['🔍 Transaksi terbesar bulan ini?', '📅 Pengeluaran minggu ini vs lalu', '🏷️ Kategori yang paling sering?', '💳 Rekening mana paling aktif?'],
+  budget: ['⚠️ Anggaran mana yang hampir habis?', '✅ Berapa yang berhasil aku hemat?', '📌 Kategori paling boros bulan ini?', '🎯 Sarankan batas anggaran untukku'],
+  goals: ['🏆 Target mana yang paling dekat?', '💰 Berapa lagi yang harus ditabung?', '📆 Kapan target ini bisa tercapai?', '🚀 Cara lebih cepat capai targetku?']
+};
 
-    function aiUpdateSugs() {
-      const wrap = el('aiSugs');
-      if (!wrap) return;
-      const ws = el('aiWelcomeScreen');
-      if (ws && !ws.classList.contains('hidden')) {
-        wrap.style.display = 'none';
-        return;
-      }
-      const page = curPage || 'dashboard';
-      const sugs = AI_SUGS[page] || AI_SUGS.dashboard;
-      wrap.innerHTML = sugs.map(s => `<button class="ai-sug" onclick="aiSendSug(this,event)">${s}</button>`).join('');
-      wrap.style.display = 'flex';
-    }
+function aiUpdateSugs() {
+  const wrap = el('aiSugs');
+  if (!wrap) return;
+  const ws = el('aiWelcomeScreen');
+  if (ws && !ws.classList.contains('hidden')) {
+    wrap.style.display = 'none';
+    return;
+  }
+  const page = curPage || 'dashboard';
+  const sugs = AI_SUGS[page] || AI_SUGS.dashboard;
+  wrap.innerHTML = sugs.map(s => `<button class="ai-sug" onclick="aiSendSug(this,event)">${s}</button>`).join('');
+  wrap.style.display = 'flex';
+}
 
-    function toggleAiChat() {
-      aiOpen = !aiOpen;
-      const panel = el('aiPanel'), fab = el('aiFab'), scrim = el('aiScrim');
-      if (aiOpen) {
-        // Tampilkan dulu (display:flex) baru trigger animasi di frame berikutnya
-        panel.style.display = 'flex';
-        if (scrim) scrim.style.display = 'block';
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => { panel.classList.add('open'); if (scrim) scrim.classList.add('open'); });
-        });
-        fab.classList.add('open');
-        // Lock body scroll saat full screen
-        document.body.style.overflow = 'hidden';
-        aiUpdateSugs();
-        const PAGE_NAMES = { dashboard: 'Dashboard', transactions: 'Transaksi', keuangan: 'Keuangan', budget: 'Anggaran', goals: 'Target Tabungan', receipt: 'Scan Struk', reports: 'Laporan', settings: 'Setelan' };
-        const pageName = PAGE_NAMES[curPage || 'dashboard'] || 'Laksa';
-        if (aiHistory.length > 0 && aiLastPage !== curPage) {
-          aiHistory.push({ role: 'user', content: `[Sistem: User berpindah ke halaman ${pageName}. Sesuaikan jawabanmu dengan konteks halaman ini.]` });
-          aiHistory.push({ role: 'assistant', content: `Siap! Sekarang kita di halaman **${pageName}**. Ada yang ingin kamu tanyakan seputar ${pageName.toLowerCase()}?` });
-        }
-        aiLastPage = curPage;
-        if (!aiWelcomed) { aiWelcome(); aiWelcomed = true; }
-        setTimeout(() => el('aiInput')?.focus(), 300);
-        // Push state untuk back gesture Android
-        history.pushState({ aiChat: true }, '');
-      } else {
-        panel.classList.remove('open');
-        fab.classList.remove('open');
-        if (scrim) scrim.classList.remove('open');
-        document.body.style.overflow = '';
-        // Tunggu animasi selesai baru hide
-        setTimeout(() => { if (!aiOpen) { panel.style.display = 'none'; if (scrim) scrim.style.display = 'none'; } }, 320);
-      }
-    }
-
-    // Back gesture / tombol back Android menutup chatbot
-    window.addEventListener('popstate', e => {
-      if (aiOpen) { aiOpen = false; const panel = el('aiPanel'), fab = el('aiFab'), scrim = el('aiScrim'); if (panel) { panel.classList.remove('open'); setTimeout(() => { if (!aiOpen) panel.style.display = 'none'; }, 320); } if (fab) fab.classList.remove('open'); if (scrim) { scrim.classList.remove('open'); setTimeout(() => scrim.style.display = 'none', 320); } document.body.style.overflow = ''; }
+function toggleAiChat() {
+  aiOpen = !aiOpen;
+  const panel = el('aiPanel'), fab = el('aiFab'), scrim = el('aiScrim');
+  if (aiOpen) {
+    // Tampilkan dulu (display:flex) baru trigger animasi di frame berikutnya
+    panel.style.display = 'flex';
+    if (scrim) scrim.style.display = 'block';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => { panel.classList.add('open'); if (scrim) scrim.classList.add('open'); });
     });
+    fab.classList.add('open');
+    // Lock body scroll saat full screen
+    document.body.style.overflow = 'hidden';
+    aiUpdateSugs();
+    const PAGE_NAMES = { dashboard: 'Dashboard', transactions: 'Transaksi', keuangan: 'Keuangan', budget: 'Anggaran', goals: 'Target Tabungan', receipt: 'Scan Struk', reports: 'Laporan', settings: 'Setelan' };
+    const pageName = PAGE_NAMES[curPage || 'dashboard'] || 'Laksa';
+    if (aiHistory.length > 0 && aiLastPage !== curPage) {
+      aiHistory.push({ role: 'user', content: `[Sistem: User berpindah ke halaman ${pageName}. Sesuaikan jawabanmu dengan konteks halaman ini.]` });
+      aiHistory.push({ role: 'assistant', content: `Siap! Sekarang kita di halaman **${pageName}**. Ada yang ingin kamu tanyakan seputar ${pageName.toLowerCase()}?` });
+    }
+    aiLastPage = curPage;
+    if (!aiWelcomed) { aiWelcome(); aiWelcomed = true; }
+    setTimeout(() => el('aiInput')?.focus(), 300);
+    // Push state untuk back gesture Android
+    history.pushState({ aiChat: true }, '');
+  } else {
+    panel.classList.remove('open');
+    fab.classList.remove('open');
+    if (scrim) scrim.classList.remove('open');
+    document.body.style.overflow = '';
+    // Tunggu animasi selesai baru hide
+    setTimeout(() => { if (!aiOpen) { panel.style.display = 'none'; if (scrim) scrim.style.display = 'none'; } }, 320);
+  }
+}
 
-    function aiWelcome() {
-      const _prof = typeof getProfile === 'function' ? getProfile() : null; 
-      const _set = typeof getSet === 'function' ? getSet() : {};
-      const name = _prof?.name || _set.name || 'Kamu';
-      const txs = typeof getTx === 'function' ? getTx() : [];
-      const accs = typeof getAccs === 'function' ? getAccs() : [];
-      const goals = typeof getGoals === 'function' ? getGoals() : [];
-      const now = typeof thisMon === 'function' ? thisMon() : '';
-      const mTx = txs.filter(t => mKey(t.date) === now);
-      const inc = mTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-      const exp = mTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-      const totalBal = accs.reduce((s, a) => s + (a.balance || 0), 0);
+// Back gesture / tombol back Android menutup chatbot
+window.addEventListener('popstate', e => {
+  if (aiOpen) { aiOpen = false; const panel = el('aiPanel'), fab = el('aiFab'), scrim = el('aiScrim'); if (panel) { panel.classList.remove('open'); setTimeout(() => { if (!aiOpen) panel.style.display = 'none'; }, 320); } if (fab) fab.classList.remove('open'); if (scrim) { scrim.classList.remove('open'); setTimeout(() => scrim.style.display = 'none', 320); } document.body.style.overflow = ''; }
+});
 
-      // Isi welcome screen
-      const wScreen = el('aiWelcomeScreen');
-      const wName = el('aiWlcName');
-      const wNW = el('aiWlcNetWorth');
-      const wMeta = el('aiWlcMeta');
-      const wChips = el('aiWlcChips');
-      const wGreeting = el('aiWlcGreeting');
+function aiWelcome() {
+  const _prof = typeof getProfile === 'function' ? getProfile() : null;
+  const _set = typeof getSet === 'function' ? getSet() : {};
+  const name = _prof?.name || _set.name || 'Kamu';
+  const txs = typeof getTx === 'function' ? getTx() : [];
+  const accs = typeof getAccs === 'function' ? getAccs() : [];
+  const goals = typeof getGoals === 'function' ? getGoals() : [];
+  const now = typeof thisMon === 'function' ? thisMon() : '';
+  const mTx = txs.filter(t => mKey(t.date) === now);
+  const inc = mTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+  const exp = mTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+  const totalBal = accs.reduce((s, a) => s + (a.balance || 0), 0);
 
-      if (!wScreen) return; // fallback jika elemen tidak ditemukan
+  // Isi welcome screen
+  const wScreen = el('aiWelcomeScreen');
+  const wName = el('aiWlcName');
+  const wNW = el('aiWlcNetWorth');
+  const wMeta = el('aiWlcMeta');
+  const wChips = el('aiWlcChips');
+  const wGreeting = el('aiWlcGreeting');
 
-      // Greeting berdasarkan waktu
-      const hr = new Date().getHours();
-      const timeGreet = hr < 11 ? 'Selamat pagi' : hr < 15 ? 'Selamat siang' : hr < 18 ? 'Selamat sore' : 'Selamat malam';
-      if (wGreeting) wGreeting.textContent = timeGreet;
+  if (!wScreen) return; // fallback jika elemen tidak ditemukan
 
-      // Nama user
-      if (wName) wName.textContent = name;
+  // Greeting berdasarkan waktu
+  const hr = new Date().getHours();
+  const timeGreet = hr < 11 ? 'Selamat pagi' : hr < 15 ? 'Selamat siang' : hr < 18 ? 'Selamat sore' : 'Selamat malam';
+  if (wGreeting) wGreeting.textContent = timeGreet;
 
-      // Net worth
-      if (wNW) wNW.textContent = fCur(totalBal);
+  // Nama user
+  if (wName) wName.textContent = name;
 
-      // Meta row (pengeluaran, rekening, target)
-      if (wMeta) {
-        const activeGoals = goals.filter(g => g.current < g.target);
-        wMeta.innerHTML = `
+  // Net worth
+  if (wNW) wNW.textContent = fCur(totalBal);
+
+  // Meta row (pengeluaran, rekening, target)
+  if (wMeta) {
+    const activeGoals = goals.filter(g => g.current < g.target);
+    wMeta.innerHTML = `
           <div class="ai-wlc-meta-item">
             <div class="ai-wlc-meta-val neg">${exp > 0 ? '−' + fCur(exp) : fCur(0)}</div>
             <div class="ai-wlc-meta-lbl">Keluar ${now.slice(5).replace('-', '/')}</div>
@@ -999,49 +999,49 @@ document.body.insertAdjacentHTML('beforeend', AI_HTML);
             <div class="ai-wlc-meta-lbl">Target aktif</div>
           </div>` : ''}
         `;
-      }
+  }
 
-      // Suggestion chips — dinamis berdasarkan kondisi
-      if (wChips) {
-                // UX 2.0: Transaksi Spesifik & Analisis
-        const chips = [];
+  // Suggestion chips — dinamis berdasarkan kondisi
+  if (wChips) {
+    // UX 2.0: Transaksi Spesifik & Analisis
+    const chips = [];
 
-        chips.push({
-          icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>',
-          title: 'Catat Pengeluaran',
-          sub: 'Cth: "Makan siang 25rb pakai BCA"',
-          prompt: null,
-          action: 'focusExpense'
-        });
+    chips.push({
+      icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+      title: 'Catat Pengeluaran',
+      sub: 'Cth: "Makan siang 25rb pakai BCA"',
+      prompt: null,
+      action: 'focusExpense'
+    });
 
-        chips.push({
-          icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
-          title: 'Catat Pemasukan',
-          sub: 'Cth: "Gaji masuk 5jt ke Mandiri"',
-          prompt: null,
-          action: 'focusIncome'
-        });
+    chips.push({
+      icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+      title: 'Catat Pemasukan',
+      sub: 'Cth: "Gaji masuk 5jt ke Mandiri"',
+      prompt: null,
+      action: 'focusIncome'
+    });
 
-        if (txs.length > 0) {
-          chips.push({
-            icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
-            title: 'Analisis keuangan bulan ini',
-            sub: `Pengeluaran ${fCur(exp)} · lihat tren & insight`,
-            prompt: 'Analisis keuangan aku bulan ini, apa yang perlu diperhatikan?',
-            action: 'prompt'
-          });
-        } else {
-          chips.push({
-            icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
-            title: 'Panduan Fitur',
-            sub: 'Pelajari Anggaran, Laporan, Tagihan',
-            prompt: 'Jelaskan semua fitur yang ada di aplikasi Laksa ini.',
-            action: 'prompt'
-          });
-        }
+    if (txs.length > 0) {
+      chips.push({
+        icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
+        title: 'Analisis keuangan bulan ini',
+        sub: `Pengeluaran ${fCur(exp)} · lihat tren & insight`,
+        prompt: 'Analisis keuangan aku bulan ini, apa yang perlu diperhatikan?',
+        action: 'prompt'
+      });
+    } else {
+      chips.push({
+        icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
+        title: 'Panduan Fitur',
+        sub: 'Pelajari Anggaran, Laporan, Tagihan',
+        prompt: 'Jelaskan semua fitur yang ada di aplikasi Laksa ini.',
+        action: 'prompt'
+      });
+    }
 
-        // Render chips
-        wChips.innerHTML = chips.map((c, i) => `
+    // Render chips
+    wChips.innerHTML = chips.map((c, i) => `
           <button class="ai-wlc-chip" onclick="aiWlcChipClick(${i})" data-prompt="${c.prompt || ''}" data-action="${c.action}">
             <div class="ai-wlc-chip-icon">${c.icon}</div>
             <div class="ai-wlc-chip-body">
@@ -1051,116 +1051,125 @@ document.body.insertAdjacentHTML('beforeend', AI_HTML);
             <div class="ai-wlc-chip-arr">›</div>
           </button>
         `).join('');
-      }
+  }
 
-      // Tampilkan welcome screen, sembunyikan aiMsgs jika kosong
-      wScreen.classList.remove('hidden');
+  // Tampilkan welcome screen, sembunyikan aiMsgs jika kosong
+  wScreen.classList.remove('hidden');
+}
+
+window.aiWlcChipClick = function (idx) {
+  const chip = el('aiWlcChips')?.querySelectorAll('.ai-wlc-chip')[idx];
+  if (!chip) return;
+  const action = chip.dataset.action;
+  const prompt = chip.dataset.prompt;
+
+  if (action === 'focusExpense' || action === 'focus') {
+    const inp = el('aiInput');
+    if (inp) {
+      inp.value = 'Pengeluaran ';
+      inp.focus();
     }
+    return;
+  }
 
-    function aiWlcChipClick(idx) {
-      const chip = el('aiWlcChips')?.querySelectorAll('.ai-wlc-chip')[idx];
-      if (!chip) return;
-      const action = chip.dataset.action;
-      const prompt = chip.dataset.prompt;
-
-      if (action === 'focus') {
-        const inp = el('aiInput');
-        if (inp) {
-          inp.value = 'Catat pengeluaran: ';
-          inp.focus();
-        }
-        return;
-      }
-
-      if (action === 'prompt' && prompt) {
-        // Sembunyikan welcome screen
-        aiHideWelcome();
-        // Kirim prompt seolah user mengetik
-        const input = el('aiInput');
-        if (input) { input.value = prompt; }
-        aiSend();
-      }
+  if (action === 'focusIncome') {
+    const inp = el('aiInput');
+    if (inp) {
+      inp.value = 'Pemasukan ';
+      inp.focus();
     }
+    return;
+  }
 
-    function aiHideWelcome() {
-      const ws = el('aiWelcomeScreen');
-      if (ws && !ws.classList.contains('hidden')) {
-        ws.classList.add('hidden');
-        aiUpdateSugs();
-      }
-    }
+  if (action === 'prompt' && prompt) {
+    // Sembunyikan welcome screen
+    aiHideWelcome();
+    // Kirim prompt seolah user mengetik
+    const input = el('aiInput');
+    if (input) { input.value = prompt; }
+    aiSend();
+  }
+};
 
-    function aiResetChat() {
-      aiHistory = []; aiWelcomed = false; aiLastPage = '';
-      const msgs = el('aiMsgs'); if (msgs) msgs.innerHTML = '';
-      const sugs = el('aiSugs'); if (sugs) { sugs.innerHTML = ''; sugs.style.display = 'none'; }
-      const ws = el('aiWelcomeScreen'); if (ws) ws.classList.remove('hidden');
-      aiWelcome();
-      aiWelcomed = true;
-      aiUpdateSugs();
-    }
+function aiHideWelcome() {
+  const ws = el('aiWelcomeScreen');
+  if (ws && !ws.classList.contains('hidden')) {
+    ws.classList.add('hidden');
+    aiUpdateSugs();
+  }
+}
 
-    function aiGetContext() {
-      const _set = getSet(); const _prof = getProfile();
-      const s = { ..._set, name: _prof?.name || _set.name || 'Pengguna' };
-      const txs = getTx();
-      const accs = getAccs();
-      const buds = getBud();
-      const goals = getGoals();
-      const cats = getCats();
-      const now = thisMon();
-      const mTx = txs.filter(t => mKey(t.date) === now);
-      const inc = mTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-      const exp = mTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-      const totalBal = accs.reduce((s, a) => s + (a.balance || 0), 0);
+function aiResetChat() {
+  aiHistory = []; aiWelcomed = false; aiLastPage = '';
+  const msgs = el('aiMsgs'); if (msgs) msgs.innerHTML = '';
+  const sugs = el('aiSugs'); if (sugs) { sugs.innerHTML = ''; sugs.style.display = 'none'; }
+  const ws = el('aiWelcomeScreen'); if (ws) ws.classList.remove('hidden');
+  aiWelcome();
+  aiWelcomed = true;
+  aiUpdateSugs();
+}
 
-      // Last 3 months comparison
-      const months = [0, 1, 2].map(i => { const d = new Date(); d.setMonth(d.getMonth() - i); return d.toISOString().slice(0, 7); });
-      const monthStats = months.map(m => {
-        const mt = txs.filter(t => mKey(t.date) === m);
-        const i = mt.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-        const e = mt.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-        return `${m}: masuk ${fCur(i)}, keluar ${fCur(e)}`;
-      }).join(' | ');
+function aiGetContext() {
+  const _set = getSet(); const _prof = getProfile();
+  const s = { ..._set, name: _prof?.name || _set.name || 'Pengguna' };
+  const txs = getTx();
+  const accs = getAccs();
+  const buds = getBud();
+  const goals = getGoals();
+  const cats = getCats();
+  const now = thisMon();
+  const mTx = txs.filter(t => mKey(t.date) === now);
+  const inc = mTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+  const exp = mTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+  const totalBal = accs.reduce((s, a) => s + (a.balance || 0), 0);
 
-      // Group expenses by category this month
-      const catExp = {};
-      mTx.filter(t => t.type === 'expense').forEach(t => {
-        const c = catBy(t.category_id);
-        catExp[c.name] = (catExp[c.name] || 0) + t.amount;
-      });
-      const catExpStr = Object.entries(catExp).sort((a, b) => b[1] - a[1])
-        .map(([n, v]) => `${n}: ${fCur(v)}`).join(', ');
+  // Last 3 months comparison
+  const months = [0, 1, 2].map(i => { const d = new Date(); d.setMonth(d.getMonth() - i); return d.toISOString().slice(0, 7); });
+  const monthStats = months.map(m => {
+    const mt = txs.filter(t => mKey(t.date) === m);
+    const i = mt.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+    const e = mt.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+    return `${m}: masuk ${fCur(i)}, keluar ${fCur(e)}`;
+  }).join(' | ');
 
-      // Last 10 transactions
-      const recent = [...txs].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10)
-        .map(t => { const c = catBy(t.category_id); return `${t.date} | ${t.type === 'income' ? 'Pemasukan' : t.type === 'expense' ? 'Pengeluaran' : 'Transfer'} | ${c.name} | ${fCur(t.amount)}${t.note ? ' | ' + t.note : ''}`; }).join('\n');
+  // Group expenses by category this month
+  const catExp = {};
+  mTx.filter(t => t.type === 'expense').forEach(t => {
+    const c = catBy(t.category_id);
+    catExp[c.name] = (catExp[c.name] || 0) + t.amount;
+  });
+  const catExpStr = Object.entries(catExp).sort((a, b) => b[1] - a[1])
+    .map(([n, v]) => `${n}: ${fCur(v)}`).join(', ');
 
-      // Budget status
-      const budStr = buds.map(b => {
-        const c = catBy(b.catId);
-        const spent = mTx.filter(t => t.type === 'expense' && t.category_id === b.catId).reduce((s, t) => s + t.amount, 0);
-        const pct = b.limit > 0 ? Math.round((spent / b.limit) * 100) : 0;
-        return `${c.name}: terpakai ${fCur(spent)} dari batas ${fCur(b.limit)} (${pct}%)${pct >= 100 ? ' ⚠️ TERLAMPAUI' : ''}`;
-      }).join('\n') || 'Tidak ada anggaran aktif';
+  // Last 10 transactions
+  const recent = [...txs].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10)
+    .map(t => { const c = catBy(t.category_id); return `${t.date} | ${t.type === 'income' ? 'Pemasukan' : t.type === 'expense' ? 'Pengeluaran' : 'Transfer'} | ${c.name} | ${fCur(t.amount)}${t.note ? ' | ' + t.note : ''}`; }).join('\n');
 
-      // Goals
-      const goalStr = goals.map(g => {
-        const pct = g.target > 0 ? Math.round((g.current / g.target) * 100) : 0;
-        const sisa = g.target - g.current;
-        return `${g.name}: terkumpul ${fCur(g.current)} dari target ${fCur(g.target)} (${pct}%)${sisa > 0 ? ', masih kurang ' + fCur(sisa) : '✓ TERCAPAI'}${g.deadline ? ', deadline ' + fDate(g.deadline) : ''}`;
-      }).join('\n') || 'Tidak ada target tabungan';
+  // Budget status
+  const budStr = buds.map(b => {
+    const c = catBy(b.catId);
+    const spent = mTx.filter(t => t.type === 'expense' && t.category_id === b.catId).reduce((s, t) => s + t.amount, 0);
+    const pct = b.limit > 0 ? Math.round((spent / b.limit) * 100) : 0;
+    return `${c.name}: terpakai ${fCur(spent)} dari batas ${fCur(b.limit)} (${pct}%)${pct >= 100 ? ' ⚠️ TERLAMPAUI' : ''}`;
+  }).join('\n') || 'Tidak ada anggaran aktif';
 
-      const PAGE_CTX = {
-        dashboard: 'User di DASHBOARD — fokus ringkasan keuangan, net worth, pemasukan vs pengeluaran bulan ini, insight umum.',
-        transactions: 'User di TRANSAKSI — fokus analisis transaksi, pola pengeluaran, perbandingan periode, detail per kategori.',
-        keuangan: 'User di halaman KEUANGAN (tab Anggaran/Target) — fokus status anggaran per kategori atau progress target tabungan sesuai tab aktif.',
-        receipt: 'User di SCAN STRUK — fokus analisis pengeluaran dari struk, kategorisasi belanja, tips hemat.',
-        reports: 'User di LAPORAN — fokus tren jangka panjang, perbandingan bulanan, insight dari data historis.'
-      };
-      const pageCtx = PAGE_CTX[curPage || 'dashboard'];
+  // Goals
+  const goalStr = goals.map(g => {
+    const pct = g.target > 0 ? Math.round((g.current / g.target) * 100) : 0;
+    const sisa = g.target - g.current;
+    return `${g.name}: terkumpul ${fCur(g.current)} dari target ${fCur(g.target)} (${pct}%)${sisa > 0 ? ', masih kurang ' + fCur(sisa) : '✓ TERCAPAI'}${g.deadline ? ', deadline ' + fDate(g.deadline) : ''}`;
+  }).join('\n') || 'Tidak ada target tabungan';
 
-      return `Kamu adalah Laksa.na, asisten keuangan personal yang cerdas, ramah, dan berbicara Bahasa Indonesia kasual. Kamu punya akses ke data keuangan real pengguna.
+  const PAGE_CTX = {
+    dashboard: 'User di DASHBOARD — fokus ringkasan keuangan, net worth, pemasukan vs pengeluaran bulan ini, insight umum.',
+    transactions: 'User di TRANSAKSI — fokus analisis transaksi, pola pengeluaran, perbandingan periode, detail per kategori.',
+    keuangan: 'User di halaman KEUANGAN (tab Anggaran/Target) — fokus status anggaran per kategori atau progress target tabungan sesuai tab aktif.',
+    receipt: 'User di SCAN STRUK — fokus analisis pengeluaran dari struk, kategorisasi belanja, tips hemat.',
+    reports: 'User di LAPORAN — fokus tren jangka panjang, perbandingan bulanan, insight dari data historis.'
+  };
+  const pageCtx = PAGE_CTX[curPage || 'dashboard'];
+
+  return `Kamu adalah Laksa.na, asisten keuangan personal yang cerdas, ramah, dan berbicara Bahasa Indonesia kasual. Kamu punya akses ke data keuangan real pengguna.
 
 ## 1. PEMBATASAN KONTEKS (SECURITY RULE - SANGAT PENTING)
 - Kamu HANYA BOLEH menjawab pertanyaan seputar keuangan personal, aplikasi Laksa, pencatatan transaksi, anggaran, target tabungan, dan data yang ada dalam konteks ini.
@@ -1220,117 +1229,117 @@ Aturan JSON:
 - \`answer\`: Singkat dan ramah. Jika mencatat transaksi, cukup tulis "Ini konfirmasinya:" (jangan ulangi rincian nominal di teks agar tidak redundant).
 - \`followups\`: Berikan 1-2 opsi respons lanjutan DARI SUDUT PANDANG PENGGUNA (First-Person POV). Harus persis seolah-olah PENGGUNA yang mengatakannya KEPADAMU. Contoh BENAR: "Bantu aku catat transaksi", "Buatkan aku anggaran". Contoh SALAH: "Ada yang bisa aku bantu?", "Mau catat transaksi?".
 - \`transaction\`: Harus \`null\` atau objek valid. Wajib diisi jika user ingin mencatat transaksi.`;
+}
+
+async function aiSend() {
+  if (typeof aiHideWelcome === 'function') aiHideWelcome();
+  const inp = el('aiInput');
+  const msg = (inp.value || '').trim();
+  if (!msg || aiTyping) return;
+  inp.value = ''; aiAutoResize(inp);
+  const sugsEl = el('aiSugs');
+  sugsEl.style.display = 'none';
+  sugsEl.innerHTML = '';
+  aiAppendMsg('user', msg);
+  aiHistory.push({ role: 'user', content: msg });
+  await aiCallGroq();
+}
+
+function aiSendSug(btn, e) {
+  if (e) { e.stopPropagation(); e.preventDefault(); }
+  const msg = btn.textContent.replace(/^[^\w\u00C0-\u024F]+/, '').trim();
+  el('aiInput').value = msg;
+  aiSend();
+}
+
+function aiKeyDown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); aiSend(); }
+}
+
+function aiAutoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 90) + 'px';
+}
+
+
+async function aiCallGroq() {
+  aiTyping = true;
+  el('aiSendBtn').disabled = true;
+  const typingEl = aiAppendTyping();
+  try {
+    const userId = getUserId();
+    const sysPrompt = aiGetContext();
+    const messages = [
+      { role: 'system', content: sysPrompt },
+      ...aiHistory.slice(-16)
+    ];
+
+    // Autochain: kirim array model ke Worker, Worker iterasi jika 429
+    const resp = await fetch(`${CLOUD_URL}/ai-chat?user_id=${userId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages, models: AI_CHAT_CHAIN })
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err?.error || 'AI error ' + resp.status);
     }
+    const data = await resp.json();
+    const raw = data.content || data.choices?.[0]?.message?.content || '{}';
+    typingEl.remove();
 
-    async function aiSend() {
-      if (typeof aiHideWelcome === 'function') aiHideWelcome();
-      const inp = el('aiInput');
-      const msg = (inp.value || '').trim();
-      if (!msg || aiTyping) return;
-      inp.value = ''; aiAutoResize(inp);
-      const sugsEl = el('aiSugs');
-      sugsEl.style.display = 'none';
-      sugsEl.innerHTML = '';
-      aiAppendMsg('user', msg);
-      aiHistory.push({ role: 'user', content: msg });
-      await aiCallGroq();
-    }
-
-    function aiSendSug(btn, e) {
-      if (e) { e.stopPropagation(); e.preventDefault(); }
-      const msg = btn.textContent.replace(/^[^\w\u00C0-\u024F]+/, '').trim();
-      el('aiInput').value = msg;
-      aiSend();
-    }
-
-    function aiKeyDown(e) {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); aiSend(); }
-    }
-
-    function aiAutoResize(el) {
-      el.style.height = 'auto';
-      el.style.height = Math.min(el.scrollHeight, 90) + 'px';
-    }
-
-
-    async function aiCallGroq() {
-      aiTyping = true;
-      el('aiSendBtn').disabled = true;
-      const typingEl = aiAppendTyping();
-      try {
-        const userId = getUserId();
-        const sysPrompt = aiGetContext();
-        const messages = [
-          { role: 'system', content: sysPrompt },
-          ...aiHistory.slice(-16)
-        ];
-
-        // Autochain: kirim array model ke Worker, Worker iterasi jika 429
-        const resp = await fetch(`${CLOUD_URL}/ai-chat?user_id=${userId}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages, models: AI_CHAT_CHAIN })
-        });
-        if (!resp.ok) {
-          const err = await resp.json().catch(() => ({}));
-          throw new Error(err?.error || 'AI error ' + resp.status);
+    // Parse JSON response
+    let answer = raw, followups = [], transaction = null;
+    try {
+      const match = raw.match(/\{[\s\S]*\}/);
+      if (match) {
+        const parsed = JSON.parse(match[0]);
+        const textBeforeJson = raw.substring(0, match.index).trim();
+        answer = parsed.answer || textBeforeJson || "Tentu, silakan cek detail transaksi berikut:";
+        followups = Array.isArray(parsed.followups) ? parsed.followups : [];
+        transaction = parsed.transaction || null;
+        if (transaction && transaction.from_account_name && transaction.to_account_name && !transaction.account_name) {
+          transaction.type = 'transfer';
         }
-        const data = await resp.json();
-        const raw = data.content || data.choices?.[0]?.message?.content || '{}';
-        typingEl.remove();
-
-        // Parse JSON response
-        let answer = raw, followups = [], transaction = null;
-        try {
-          const match = raw.match(/\{[\s\S]*\}/);
-          if (match) {
-            const parsed = JSON.parse(match[0]);
-            const textBeforeJson = raw.substring(0, match.index).trim();
-            answer = parsed.answer || textBeforeJson || "Tentu, silakan cek detail transaksi berikut:";
-            followups = Array.isArray(parsed.followups) ? parsed.followups : [];
-            transaction = parsed.transaction || null;
-            if (transaction && transaction.from_account_name && transaction.to_account_name && !transaction.account_name) {
-              transaction.type = 'transfer';
-            }
-          }
-        } catch (e) { answer = raw; }
-
-        aiAppendMsg('bot', answer);
-        aiHistory.push({ role: 'assistant', content: answer });
-
-        // Jika AI deteksi transaksi → tampilkan bubble konfirmasi
-        if (transaction && transaction.amount && (transaction.account_name || (transaction.from_account_name && transaction.to_account_name))) {
-          aiAppendTxConfirm(transaction);
-        }
-
-        if (followups.length) {
-          const sugsEl = el('aiSugs');
-          sugsEl.style.display = 'flex';
-          sugsEl.innerHTML = followups.map(s => `<button class="ai-sug" onclick="aiSendSug(this,event)">${esc(s)}</button>`).join('');
-        }
-      } catch (err) {
-        typingEl.remove();
-        aiAppendMsg('bot', '⚠️ Gagal: ' + err.message);
-        console.error('AI error:', err);
-      } finally {
-        aiTyping = false;
-        el('aiSendBtn').disabled = false;
-        el('aiInput').focus();
       }
+    } catch (e) { answer = raw; }
+
+    aiAppendMsg('bot', answer);
+    aiHistory.push({ role: 'assistant', content: answer });
+
+    // Jika AI deteksi transaksi → tampilkan bubble konfirmasi
+    if (transaction && transaction.amount && (transaction.account_name || (transaction.from_account_name && transaction.to_account_name))) {
+      aiAppendTxConfirm(transaction);
     }
 
-    // ── TRANSACTION CONFIRM BUBBLE ──
-    function aiAppendTxConfirm(tx) {
-      const wrap = el('aiMsgs');
-      const txType = (tx.type || '').toLowerCase();
-      const typeLabel = txType === 'income' ? 'Pemasukan' : txType === 'transfer' ? 'Transfer' : 'Pengeluaran';
-      const typeClass = txType === 'income' ? 'inc' : txType === 'transfer' ? '' : 'exp';
-      const typeIco = txType === 'income' ? '↑' : txType === 'transfer' ? '⇄' : '↓';
-      const txId = 'txc_' + Date.now();
-      const div = document.createElement('div');
-      div.className = 'ai-msg bot';
-      div.id = txId;
-      div.innerHTML = `
+    if (followups.length) {
+      const sugsEl = el('aiSugs');
+      sugsEl.style.display = 'flex';
+      sugsEl.innerHTML = followups.map(s => `<button class="ai-sug" onclick="aiSendSug(this,event)">${esc(s)}</button>`).join('');
+    }
+  } catch (err) {
+    typingEl.remove();
+    aiAppendMsg('bot', '⚠️ Gagal: ' + err.message);
+    console.error('AI error:', err);
+  } finally {
+    aiTyping = false;
+    el('aiSendBtn').disabled = false;
+    el('aiInput').focus();
+  }
+}
+
+// ── TRANSACTION CONFIRM BUBBLE ──
+function aiAppendTxConfirm(tx) {
+  const wrap = el('aiMsgs');
+  const txType = (tx.type || '').toLowerCase();
+  const typeLabel = txType === 'income' ? 'Pemasukan' : txType === 'transfer' ? 'Transfer' : 'Pengeluaran';
+  const typeClass = txType === 'income' ? 'inc' : txType === 'transfer' ? '' : 'exp';
+  const typeIco = txType === 'income' ? '↑' : txType === 'transfer' ? '⇄' : '↓';
+  const txId = 'txc_' + Date.now();
+  const div = document.createElement('div');
+  div.className = 'ai-msg bot';
+  div.id = txId;
+  div.innerHTML = `
     <div class="ai-tx-confirm">
       <div class="ai-tx-confirm-title">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
@@ -1339,8 +1348,8 @@ Aturan JSON:
       <div class="ai-tx-confirm-rows">
         <div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Jenis</span><span class="ai-tx-confirm-val ${typeClass}">${typeIco} ${typeLabel}</span></div>
         <div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Jumlah</span><span class="ai-tx-confirm-val ${typeClass}">${fCur(tx.amount)}</span></div>
-        <div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Rekening</span><span class="ai-tx-confirm-val">${(tx.type||'').toLowerCase() === 'transfer' ? esc(tx.from_account_name) + ' ➔ ' + esc(tx.to_account_name) : esc(tx.account_name)}</span></div>
-        <div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Kategori</span><span class="ai-tx-confirm-val">${(tx.type||'').toLowerCase() === 'transfer' ? 'Transfer' : esc(tx.category_name || 'Lainnya')}</span></div>
+        <div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Rekening</span><span class="ai-tx-confirm-val">${(tx.type || '').toLowerCase() === 'transfer' ? esc(tx.from_account_name) + ' ➔ ' + esc(tx.to_account_name) : esc(tx.account_name)}</span></div>
+        <div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Kategori</span><span class="ai-tx-confirm-val">${(tx.type || '').toLowerCase() === 'transfer' ? 'Transfer' : esc(tx.category_name || 'Lainnya')}</span></div>
         <div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Catatan</span><span class="ai-tx-confirm-val">${esc(tx.note || '-')}</span></div>
         <div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Tanggal</span><span class="ai-tx-confirm-val">${tx.date || today()}</span></div>
       </div>
@@ -1359,184 +1368,184 @@ Aturan JSON:
         </button>
       </div>
     </div>`;
-      wrap.appendChild(div);
-      requestAnimationFrame(() => { wrap.scrollTop = wrap.scrollHeight; });
-    }
+  wrap.appendChild(div);
+  requestAnimationFrame(() => { wrap.scrollTop = wrap.scrollHeight; });
+}
 
-    async function aiConfirmTx(tx, bubbleId) {
-      const accs = getAccs();
-      const cats = getCats();
-      const bubble = el(bubbleId);
+async function aiConfirmTx(tx, bubbleId) {
+  const accs = getAccs();
+  const cats = getCats();
+  const bubble = el(bubbleId);
 
-      let reqs = [];
-      const amt = Number(tx.amount);
-      const dt = tx.date || today();
-      const nt = tx.note || '';
-      const txType = (tx.type || '').toLowerCase();
+  let reqs = [];
+  const amt = Number(tx.amount);
+  const dt = tx.date || today();
+  const nt = tx.note || '';
+  const txType = (tx.type || '').toLowerCase();
 
-      if (txType === 'transfer') {
-        const accFrom = accs.find(a => a.name.toLowerCase().includes((tx.from_account_name || '').toLowerCase()));
-        const accTo = accs.find(a => a.name.toLowerCase().includes((tx.to_account_name || '').toLowerCase()));
-        if (!accFrom || !accTo) { toast('Rekening asal atau tujuan tidak ditemukan.', 'err'); return; }
-        if (amt > (accFrom.balance || 0)) {
-          if (bubble) {
-            const btns = bubble.querySelector('.ai-tx-confirm-btns');
-            if (btns) btns.innerHTML = '<div class="ai-tx-confirm-done" style="color:var(--expense)">❌ Gagal: Saldo rekening asal tidak cukup.</div>';
-          }
-          toast('Saldo rekening asal tidak cukup!', 'err');
-          return;
-        }
-        
-        let tfCat = cats.find(c => c.name.toLowerCase() === 'transfer');
-        if (!tfCat) {
-          try {
-            tfCat = await api('POST', '/categories', { name: 'Transfer', emoji: '🔄', type: 'both' });
-            if (typeof fetchCats === 'function') await fetchCats();
-          } catch(e) {
-            tfCat = cats.find(c => c.name.toLowerCase() === 'lainnya') || cats[0];
-          }
-        }
-        
-        const noteFrom = nt ? nt + ' (Transfer ke ' + accTo.name + ')' : '(Transfer ke ' + accTo.name + ')';
-        const noteTo = nt ? nt + ' (Transfer dari ' + accFrom.name + ')' : '(Transfer dari ' + accFrom.name + ')';
-
-        reqs.push({ type: 'expense', amount: amt, date: dt, account_id: accFrom.id, category_id: tfCat.id, note: noteFrom, source: 'ai-chat' });
-        reqs.push({ type: 'income', amount: amt, date: dt, account_id: accTo.id, category_id: tfCat.id, note: noteTo, source: 'ai-chat' });
-      } else {
-        const acc = accs.find(a => a.name.toLowerCase().includes((tx.account_name || '').toLowerCase())) || accs[0];
-        const cat = cats.find(c => c.name.toLowerCase().includes((tx.category_name || '').toLowerCase())) || cats[cats.length - 1];
-        if (!acc) { toast('Rekening tidak ditemukan.', 'err'); return; }
-
-        if (txType === 'expense' && amt > (acc.balance || 0)) {
-          if (bubble) {
-            const btns = bubble.querySelector('.ai-tx-confirm-btns');
-            if (btns) btns.innerHTML = '<div class="ai-tx-confirm-done" style="color:var(--expense)">❌ Gagal: Saldo tidak cukup.</div>';
-          }
-          toast('Saldo rekening tidak cukup!', 'err');
-          return;
-        }
-        reqs.push({ type: txType, amount: amt, date: dt, account_id: acc.id, category_id: cat.id, note: nt, source: 'ai-chat' });
-      }
-
+  if (txType === 'transfer') {
+    const accFrom = accs.find(a => a.name.toLowerCase().includes((tx.from_account_name || '').toLowerCase()));
+    const accTo = accs.find(a => a.name.toLowerCase().includes((tx.to_account_name || '').toLowerCase()));
+    if (!accFrom || !accTo) { toast('Rekening asal atau tujuan tidak ditemukan.', 'err'); return; }
+    if (amt > (accFrom.balance || 0)) {
       if (bubble) {
         const btns = bubble.querySelector('.ai-tx-confirm-btns');
-        if (btns) btns.innerHTML = '<div class="ai-tx-confirm-done">⏳ Menyimpan…</div>';
+        if (btns) btns.innerHTML = '<div class="ai-tx-confirm-done" style="color:var(--expense)">❌ Gagal: Saldo rekening asal tidak cukup.</div>';
       }
+      toast('Saldo rekening asal tidak cukup!', 'err');
+      return;
+    }
 
+    let tfCat = cats.find(c => c.name.toLowerCase() === 'transfer');
+    if (!tfCat) {
       try {
-        for (const req of reqs) {
-          await api('POST', '/transactions', req);
-        }
-        // Refresh data
-        const m = dt.slice(0, 7);
-        await Promise.all([fetchTx(m), fetchAccs()]);
-        if (curPage === 'dashboard' || curPage === 'transactions') refresh();
-
-        if (bubble) {
-          const btns = bubble.querySelector('.ai-tx-confirm-btns');
-          if (btns) btns.innerHTML = '<div class="ai-tx-confirm-done">✅ Berhasil dicatat!</div>';
-        }
-        toast('Transaksi dicatat via Laksa.na!', 'ok');
+        tfCat = await api('POST', '/categories', { name: 'Transfer', emoji: '🔄', type: 'both' });
+        if (typeof fetchCats === 'function') await fetchCats();
       } catch (e) {
-        if (bubble) {
-          const btns = bubble.querySelector('.ai-tx-confirm-btns');
-          if (btns) btns.innerHTML = '<div class="ai-tx-confirm-done" style="color:var(--expense)">❌ Gagal: ' + esc(e.message) + '</div>';
-        }
-        toast('Gagal catat transaksi: ' + e.message, 'err');
+        tfCat = cats.find(c => c.name.toLowerCase() === 'lainnya') || cats[0];
       }
     }
 
-    function aiEditTx(tx, bubbleId) {
-      // Pre-fill form addTransaction dengan data dari AI, lalu tutup bubble
-      const accs = getAccs();
-      const cats = getCats();
-      const acc = accs.find(a => a.name.toLowerCase().includes((tx.account_name || '').toLowerCase())) || accs[0];
-      const cat = cats.find(c => c.name.toLowerCase().includes((tx.category_name || '').toLowerCase())) || cats[cats.length - 1];
-      const prefilled = {
-        type: tx.type || 'expense',
-        amount: tx.amount || 0,
-        date: tx.date || today(),
-        account_id: acc?.id || accs[0]?.id,
-        category_id: cat?.id || cats[0]?.id,
-        note: tx.note || ''
-      };
-      const bubble = el(bubbleId);
+    const noteFrom = nt ? nt + ' (Transfer ke ' + accTo.name + ')' : '(Transfer ke ' + accTo.name + ')';
+    const noteTo = nt ? nt + ' (Transfer dari ' + accFrom.name + ')' : '(Transfer dari ' + accFrom.name + ')';
+
+    reqs.push({ type: 'expense', amount: amt, date: dt, account_id: accFrom.id, category_id: tfCat.id, note: noteFrom, source: 'ai-chat' });
+    reqs.push({ type: 'income', amount: amt, date: dt, account_id: accTo.id, category_id: tfCat.id, note: noteTo, source: 'ai-chat' });
+  } else {
+    const acc = accs.find(a => a.name.toLowerCase().includes((tx.account_name || '').toLowerCase())) || accs[0];
+    const cat = cats.find(c => c.name.toLowerCase().includes((tx.category_name || '').toLowerCase())) || cats[cats.length - 1];
+    if (!acc) { toast('Rekening tidak ditemukan.', 'err'); return; }
+
+    if (txType === 'expense' && amt > (acc.balance || 0)) {
       if (bubble) {
         const btns = bubble.querySelector('.ai-tx-confirm-btns');
-        if (btns) btns.innerHTML = '<div class="ai-tx-confirm-done">✏️ Membuka form edit…</div>';
+        if (btns) btns.innerHTML = '<div class="ai-tx-confirm-done" style="color:var(--expense)">❌ Gagal: Saldo tidak cukup.</div>';
       }
-      setTimeout(() => openModal('addTransaction', prefilled), 150);
+      toast('Saldo rekening tidak cukup!', 'err');
+      return;
     }
+    reqs.push({ type: txType, amount: amt, date: dt, account_id: acc.id, category_id: cat.id, note: nt, source: 'ai-chat' });
+  }
 
-    function aiCancelTx(bubbleId) {
-      const bubble = el(bubbleId);
-      if (bubble) {
-        const btns = bubble.querySelector('.ai-tx-confirm-btns');
-        if (btns) btns.innerHTML = '<div class="ai-tx-confirm-done">✗ Dibatalkan</div>';
-      }
+  if (bubble) {
+    const btns = bubble.querySelector('.ai-tx-confirm-btns');
+    if (btns) btns.innerHTML = '<div class="ai-tx-confirm-done">⏳ Menyimpan…</div>';
+  }
+
+  try {
+    for (const req of reqs) {
+      await api('POST', '/transactions', req);
     }
+    // Refresh data
+    const m = dt.slice(0, 7);
+    await Promise.all([fetchTx(m), fetchAccs()]);
+    if (curPage === 'dashboard' || curPage === 'transactions') refresh();
 
-    function aiRenderMarkdown(text) {
-      // Process line by line for predictable output
-      const lines = text.split('\n');
-      let html = '';
-      for (let i = 0; i < lines.length; i++) {
-        let line = lines[i];
-        // Escape HTML
-        line = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        // Inline: **bold**
-        line = line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-        // Inline: __underline__
-        line = line.replace(/__(.+?)__/g, '<u style="text-decoration-color:rgba(37,99,235,.5)">$1</u>');
-        // Inline: *italic*
-        line = line.replace(/\*([^*]+?)\*/g, '<em>$1</em>');
-        // Inline: `code`
-        line = line.replace(/`([^`]+)`/g, '<code class="ai-md-code">$1</code>');
-        // ### header
-        if (/^###\s+/.test(line)) {
-          html += `<div class="ai-md-h">${line.replace(/^###\s+/, '')}</div>`;
-        }
-        // Numbered list: 1. 2. etc
-        else if (/^\d+\.\s+/.test(line)) {
-          const num = line.match(/^(\d+)\./)[1];
-          const content = line.replace(/^\d+\.\s+/, '');
-          html += `<div class="ai-md-li"><span class="ai-md-num">${num}</span><span>${content}</span></div>`;
-        }
-        // Bullet list: - or * or •
-        else if (/^[-*•]\s+/.test(line)) {
-          const content = line.replace(/^[-*•]\s+/, '');
-          html += `<div class="ai-md-li"><span class="ai-md-dot">•</span><span>${content}</span></div>`;
-        }
-        // Empty line → spacer
-        else if (line.trim() === '') {
-          html += '<div class="ai-md-gap"></div>';
-        }
-        // Normal line
-        else {
-          html += `<div class="ai-md-p">${line}</div>`;
-        }
-      }
-      return html;
+    if (bubble) {
+      const btns = bubble.querySelector('.ai-tx-confirm-btns');
+      if (btns) btns.innerHTML = '<div class="ai-tx-confirm-done">✅ Berhasil dicatat!</div>';
     }
-
-    function aiAppendMsg(role, text) {
-      if (typeof aiHideWelcome === 'function') aiHideWelcome();
-      const wrap = el('aiMsgs');
-      const now = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-      const html = role === 'bot' ? aiRenderMarkdown(text) : text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
-      const div = document.createElement('div');
-      div.className = 'ai-msg ' + role;
-      div.innerHTML = `<div class="ai-bubble">${html}</div><div class="ai-time">${now}</div>`;
-      wrap.appendChild(div);
-      requestAnimationFrame(() => { wrap.scrollTop = wrap.scrollHeight; });
-      return div;
+    toast('Transaksi dicatat via Laksa.na!', 'ok');
+  } catch (e) {
+    if (bubble) {
+      const btns = bubble.querySelector('.ai-tx-confirm-btns');
+      if (btns) btns.innerHTML = '<div class="ai-tx-confirm-done" style="color:var(--expense)">❌ Gagal: ' + esc(e.message) + '</div>';
     }
+    toast('Gagal catat transaksi: ' + e.message, 'err');
+  }
+}
 
-    function aiAppendTyping() {
-      const wrap = el('aiMsgs');
-      const div = document.createElement('div');
-      div.className = 'ai-msg bot';
-      div.innerHTML = `
+function aiEditTx(tx, bubbleId) {
+  // Pre-fill form addTransaction dengan data dari AI, lalu tutup bubble
+  const accs = getAccs();
+  const cats = getCats();
+  const acc = accs.find(a => a.name.toLowerCase().includes((tx.account_name || '').toLowerCase())) || accs[0];
+  const cat = cats.find(c => c.name.toLowerCase().includes((tx.category_name || '').toLowerCase())) || cats[cats.length - 1];
+  const prefilled = {
+    type: tx.type || 'expense',
+    amount: tx.amount || 0,
+    date: tx.date || today(),
+    account_id: acc?.id || accs[0]?.id,
+    category_id: cat?.id || cats[0]?.id,
+    note: tx.note || ''
+  };
+  const bubble = el(bubbleId);
+  if (bubble) {
+    const btns = bubble.querySelector('.ai-tx-confirm-btns');
+    if (btns) btns.innerHTML = '<div class="ai-tx-confirm-done">✏️ Membuka form edit…</div>';
+  }
+  setTimeout(() => openModal('addTransaction', prefilled), 150);
+}
+
+function aiCancelTx(bubbleId) {
+  const bubble = el(bubbleId);
+  if (bubble) {
+    const btns = bubble.querySelector('.ai-tx-confirm-btns');
+    if (btns) btns.innerHTML = '<div class="ai-tx-confirm-done">✗ Dibatalkan</div>';
+  }
+}
+
+function aiRenderMarkdown(text) {
+  // Process line by line for predictable output
+  const lines = text.split('\n');
+  let html = '';
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+    // Escape HTML
+    line = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    // Inline: **bold**
+    line = line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    // Inline: __underline__
+    line = line.replace(/__(.+?)__/g, '<u style="text-decoration-color:rgba(37,99,235,.5)">$1</u>');
+    // Inline: *italic*
+    line = line.replace(/\*([^*]+?)\*/g, '<em>$1</em>');
+    // Inline: `code`
+    line = line.replace(/`([^`]+)`/g, '<code class="ai-md-code">$1</code>');
+    // ### header
+    if (/^###\s+/.test(line)) {
+      html += `<div class="ai-md-h">${line.replace(/^###\s+/, '')}</div>`;
+    }
+    // Numbered list: 1. 2. etc
+    else if (/^\d+\.\s+/.test(line)) {
+      const num = line.match(/^(\d+)\./)[1];
+      const content = line.replace(/^\d+\.\s+/, '');
+      html += `<div class="ai-md-li"><span class="ai-md-num">${num}</span><span>${content}</span></div>`;
+    }
+    // Bullet list: - or * or •
+    else if (/^[-*•]\s+/.test(line)) {
+      const content = line.replace(/^[-*•]\s+/, '');
+      html += `<div class="ai-md-li"><span class="ai-md-dot">•</span><span>${content}</span></div>`;
+    }
+    // Empty line → spacer
+    else if (line.trim() === '') {
+      html += '<div class="ai-md-gap"></div>';
+    }
+    // Normal line
+    else {
+      html += `<div class="ai-md-p">${line}</div>`;
+    }
+  }
+  return html;
+}
+
+function aiAppendMsg(role, text) {
+  if (typeof aiHideWelcome === 'function') aiHideWelcome();
+  const wrap = el('aiMsgs');
+  const now = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  const html = role === 'bot' ? aiRenderMarkdown(text) : text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+  const div = document.createElement('div');
+  div.className = 'ai-msg ' + role;
+  div.innerHTML = `<div class="ai-bubble">${html}</div><div class="ai-time">${now}</div>`;
+  wrap.appendChild(div);
+  requestAnimationFrame(() => { wrap.scrollTop = wrap.scrollHeight; });
+  return div;
+}
+
+function aiAppendTyping() {
+  const wrap = el('aiMsgs');
+  const div = document.createElement('div');
+  div.className = 'ai-msg bot';
+  div.innerHTML = `
         <div class="ai-hdr-ava" style="width:32px;height:32px;margin-bottom:4px;box-shadow:none!important;background:transparent;animation:pulseLogo 1.5s ease-in-out infinite">
           <svg width="24" height="24" viewBox="0 0 72 72" fill="none">
             <g style="transform-origin:36px 36px;animation:spinOrbit 1.5s linear infinite">
@@ -1553,13 +1562,13 @@ Aturan JSON:
             <circle cx="36" cy="36" r="4" fill="#22d3ee"/>
           </svg>
         </div>`;
-      wrap.appendChild(div);
-      requestAnimationFrame(() => { wrap.scrollTop = wrap.scrollHeight; });
-      return div;
-    }
+  wrap.appendChild(div);
+  requestAnimationFrame(() => { wrap.scrollTop = wrap.scrollHeight; });
+  return div;
+}
 
-    // Close AI panel when clicking outside
-    document.addEventListener('click', e => {
-      if (aiOpen && !e.target.closest('#aiPanel') && !e.target.closest('#aiFab') && !e.target.closest('.ai-sug')) {/* full screen — tidak close saat klik luar */ }
-    });
+// Close AI panel when clicking outside
+document.addEventListener('click', e => {
+  if (aiOpen && !e.target.closest('#aiPanel') && !e.target.closest('#aiFab') && !e.target.closest('.ai-sug')) {/* full screen — tidak close saat klik luar */ }
+});
 
