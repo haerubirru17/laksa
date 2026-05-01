@@ -1182,11 +1182,11 @@ document.body.insertAdjacentHTML('beforeend', AI_HTML);
 
 ## 5. CATAT TRANSAKSI
 Jika user meminta mencatat transaksi (misal: "masuk gaji 5juta", "beli kopi 25k", "pindahkan semua uang"):
-- Kamu WAJIB menyertakan objek JSON `transaction` agar memicu pop-up konfirmasi. JANGAN membuat konfirmasi transaksi panjang lebar di bagian teks `answer`.
-- `amount`: WAJIB angka murni tanpa titik/koma/string (misal 5juta = 5000000, 25k = 25000). Jika user bilang "seluruh uang", lihat Saldo rekening saat ini dan gunakan angka tersebut.
-- `type`: "income" (pemasukan), "expense" (pengeluaran), atau "transfer".
-- `account_name`: Wajib untuk income/expense. Harus cocok dengan rekening yang ada.
-- KHUSUS "transfer": GUNAKAN `from_account_name` (rekening asal) dan `to_account_name` (rekening tujuan). JANGAN gunakan `account_name` atau `category_name`.
+- Kamu WAJIB menyertakan objek JSON \`transaction\` agar memicu pop-up konfirmasi. JANGAN membuat konfirmasi transaksi panjang lebar di bagian teks \`answer\`.
+- \`amount\`: WAJIB angka murni tanpa titik/koma/string (misal 5juta = 5000000, 25k = 25000). Jika user bilang "seluruh uang", lihat Saldo rekening saat ini dan gunakan angka tersebut.
+- \`type\`: "income" (pemasukan), "expense" (pengeluaran), atau "transfer".
+- \`account_name\`: Wajib untuk income/expense. Harus cocok dengan rekening yang ada.
+- KHUSUS "transfer": GUNAKAN \`from_account_name\` (rekening asal) dan \`to_account_name\` (rekening tujuan). JANGAN gunakan \`account_name\` atau \`category_name\`.
 - PENTING: Aplikasi ini TIDAK MEMILIKI "batas transfer" atau "limit harian". JANGAN PERNAH menolak transaksi dengan alasan fiktif seperti batas transfer melebihi limit. Catat saja berapapun nominalnya!
 
 ## 6. IDENTITAS PENGEMBANG
