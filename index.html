@@ -7006,7 +7006,6 @@
       const bills = getBills(), grid = el('billGrid'), emp = el('billEmpty');
       if (!bills.length) { grid.innerHTML = ''; emp.style.display = 'flex'; return; }
       emp.style.display = 'none';
-      // Sort: overdue → due-soon → upcoming → paid
       const ORDER = { overdue: 0, 'due-soon': 1, upcoming: 2, paid: 3 };
       const sorted = [...bills].sort((a, b) => {
         const sa = billDueStatus(a), sb = billDueStatus(b);
@@ -7021,35 +7020,104 @@
         const dueLabel = b.due_type === 'once' && b.due_date
           ? `Jatuh tempo ${fDate(b.due_date)}`
           : `Tgl ${b.due_day || 1} tiap bulan`;
-        const amtHtml = b.amount > 0 ? `<span class="dash-bill-amt">${fCur(b.amount)}</span>` : '<span style="font-size:.76rem;color:var(--ink3)">Nominal belum diset</span>';
+        const amtHtml = b.amount > 0
+          ? `<span class="bill-amount">${fCur(b.amount)}</span>`
+          : `<span class="bill-amount" style="font-size:0.8rem;color:var(--ink3);">--</span>`;
         const isPaid = b.status === 'paid';
-        return `<div class="bill-card ${st.cls}">
-      <div class="bill-top">
-        <span class="bill-dot ${st.dotCls}"></span>
-        <span class="bill-name">${esc(b.name)}</span>
-        <span class="bill-badge ${st.cls}">${st.label}</span>
-      </div>
-      <div class="bill-meta">
-        <div>
-          <div class="bill-due">${dueLabel} · <span style="font-size:.7rem;color:var(--ink3);opacity:.8">${typeLbl}</span></div>
-          ${b.notes ? `<div style="font-size:.72rem;color:var(--ink3);margin-top:.15rem">${esc(b.notes)}</div>` : ''}
-        </div>
-        ${amtHtml}
-      </div>
-      <div class="bill-actions">
-        <button class="bill-pay-btn" onclick="openPayBill('${b.id}')" ${isPaid ? 'disabled' : ''}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-          ${isPaid ? 'Sudah Lunas' : 'Tandai Lunas'}
-        </button>
-        <button class="bill-edit-btn" onclick="openEditBill('${b.id}')" title="Edit">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        </button>
-        <button class="bill-del-btn" onclick="delBill('${b.id}')" title="Hapus">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
-        </button>
+
+        const actionBtns = `<div style="display:flex;gap:6px;align-items:center;">
+          <button onclick="openEditBill('${b.id}')" style="background:none;border:none;color:var(--ink3);cursor:pointer;padding:2px;" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          <button onclick="delBill('${b.id}')" style="background:none;border:none;color:var(--expense);cursor:pointer;padding:2px;" title="Hapus"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button>
+        </div>`;
+
+        if (isPaid) {
+          return `<div class="card-wrap"><div class="bill-card paid">
+            <div class="card-top"><div class="card-left"><div class="bill-dot paid"></div><div><div class="bill-name">${esc(b.name)}</div><div class="bill-meta">${dueLabel} · ${typeLbl}</div></div></div>${actionBtns}</div>
+            <div class="bill-divider"></div>
+            <div class="card-bottom" style="justify-content:space-between;"><div class="bill-badge paid">Lunas</div>${amtHtml}</div>
+          </div></div>`;
+        }
+
+        return `<div class="card-wrap">
+      <div class="action-bg"><div class="check-label"><div class="check-circle">✓</div> Tandai Lunas</div></div>
+      <div class="bill-card ${st.cls}" data-id="${b.id}">
+        <div class="card-top"><div class="card-left"><div class="bill-dot ${st.cls}"></div><div><div class="bill-name">${esc(b.name)}</div><div class="bill-meta">${dueLabel} · ${typeLbl}</div></div></div>${actionBtns}</div>
+        <div class="bill-divider"></div>
+        <div class="card-bottom"><div style="display:flex;align-items:center;gap:8px;"><div class="bill-badge ${st.cls}">${st.label}</div><div class="swipe-hint"><div class="arrows"><span></span><span></span></div> geser untuk lunas</div></div>${amtHtml}</div>
       </div>
     </div>`;
       }).join('');
+      setTimeout(bindSwipeBills, 100);
+    }
+
+    function bindSwipeBills() {
+      const cards = document.querySelectorAll('#billGrid .bill-card:not(.paid)');
+      cards.forEach(card => {
+        if (card._swipeBound) return;
+        card._swipeBound = true;
+        const wrap = card.parentElement;
+        const lbl = wrap ? wrap.querySelector('.check-label') : null;
+        let startX = 0, curX = 0, dragging = false;
+        const threshold = 110;
+        function onStart(e) {
+          if (e.target.closest('button')) return;
+          startX = e.touches ? e.touches[0].clientX : e.clientX;
+          dragging = true;
+          card.style.transition = 'none';
+          card.style.cursor = 'grabbing';
+        }
+        function onMove(e) {
+          if (!dragging) return;
+          curX = (e.touches ? e.touches[0].clientX : e.clientX) - startX;
+          if (curX < 0) curX = 0;
+          const pct = Math.min(curX / threshold, 1);
+          card.style.transform = `translateX(${curX}px)`;
+          if (lbl) lbl.style.opacity = pct;
+        }
+        async function onEnd() {
+          if (!dragging) return;
+          dragging = false;
+          card.style.cursor = 'grab';
+          card.style.transition = 'transform 0.3s cubic-bezier(.34,1.1,.64,1)';
+          if (curX >= threshold) {
+            card.style.transform = `translateX(${card.parentElement.offsetWidth}px)`;
+            if (lbl) lbl.style.opacity = 1;
+            const id = card.getAttribute('data-id');
+            try {
+              await api('PATCH', `/bills/${id}`, { status: 'paid', paid_date: new Date().toISOString() });
+              setTimeout(() => {
+                const w = card.parentElement;
+                if (w) {
+                  w.style.transition = 'all 0.35s ease';
+                  w.style.maxHeight = w.offsetHeight + 'px';
+                  w.offsetHeight;
+                  w.style.maxHeight = '0';
+                  w.style.opacity = '0';
+                  w.style.marginBottom = '0';
+                }
+              }, 200);
+              toast('Tagihan ditandai lunas ✓', 'ok');
+              await fetchBills();
+              renderBills();
+              renderDashBills();
+            } catch(err) {
+              toast('Gagal: ' + err.message, 'err');
+              card.style.transform = 'translateX(0)';
+              if (lbl) lbl.style.opacity = 0;
+            }
+          } else {
+            card.style.transform = 'translateX(0)';
+            if (lbl) lbl.style.opacity = 0;
+          }
+          curX = 0;
+        }
+        card.addEventListener('touchstart', onStart, {passive: true});
+        card.addEventListener('touchmove', onMove, {passive: true});
+        card.addEventListener('touchend', onEnd);
+        card.addEventListener('mousedown', onStart);
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onEnd);
+      });
     }
 
     function openPayBill(id) {
