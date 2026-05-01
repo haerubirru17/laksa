@@ -4230,48 +4230,179 @@
       border-color: rgba(99, 102, 241, .4)
     }
 
-    .ai-typing {
+    /* ── WELCOME SCREEN ── */
+    .ai-welcome {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.2rem 1rem 0.8rem;
+      gap: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    /* Sembunyikan welcome screen saat sudah ada pesan */
+    .ai-welcome.hidden {
+      display: none;
+    }
+
+    .ai-wlc-hero {
+      text-align: center;
+      padding: 0.4rem 0 0.2rem;
+    }
+
+    .ai-wlc-greeting {
+      font-size: 0.72rem;
+      color: var(--ink3);
+      letter-spacing: 0.03em;
+      margin-bottom: 0.2rem;
+    }
+
+    .ai-wlc-name {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+    }
+
+    /* Net worth card */
+    .ai-wlc-card {
+      background: var(--gs-2);
+      border: 1.5px solid var(--gs-border);
+      border-radius: 14px;
+      padding: 0.85rem 1.1rem;
+      width: 100%;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .ai-wlc-card-lbl {
+      font-size: 0.67rem;
+      color: var(--ink3);
+      margin-bottom: 0.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .ai-wlc-card-val {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.03em;
+    }
+
+    .ai-wlc-card-meta {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.6rem;
+      padding-top: 0.6rem;
+      border-top: 1px solid var(--gs-border);
+    }
+
+    .ai-wlc-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.08rem;
+    }
+
+    .ai-wlc-meta-val {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .ai-wlc-meta-val.neg {
+      color: var(--expense, #ef4444);
+    }
+
+    .ai-wlc-meta-val.pos {
+      color: var(--income, #10b981);
+    }
+
+    .ai-wlc-meta-lbl {
+      font-size: 0.62rem;
+      color: var(--ink3);
+    }
+
+    /* Suggestion chips */
+    .ai-wlc-chips {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      width: 100%;
+    }
+
+    .ai-wlc-chip {
+      background: var(--gs-2);
+      border: 1.5px solid var(--gs-border);
+      border-radius: 12px;
+      padding: 0.65rem 0.85rem;
       display: flex;
       align-items: center;
-      gap: .28rem;
-      padding: .52rem .72rem;
-      background: var(--gs-4);
-      border: 1.5px solid var(--gs-border);
-      border-radius: 16px;
-      border-bottom-left-radius: 5px;
-      width: fit-content;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, .06)
+      gap: 0.65rem;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+      text-align: left;
+      width: 100%;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
     }
 
-    .ai-typing span {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #6366f1;
-      animation: typing .9s ease-in-out infinite
+    .ai-wlc-chip:hover {
+      background: var(--gs-3);
+      border-color: rgba(99, 102, 241, 0.35);
+      transform: translateX(2px);
     }
 
-    .ai-typing span:nth-child(2) {
-      animation-delay: .18s
+    .ai-wlc-chip:active {
+      transform: translateX(1px) scale(0.99);
     }
 
-    .ai-typing span:nth-child(3) {
-      animation-delay: .36s
+    .ai-wlc-chip-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(99, 102, 241, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
 
-    @keyframes typing {
+    .ai-wlc-chip-body {
+      flex: 1;
+      min-width: 0;
+    }
 
-      0%,
-      60%,
-      100% {
-        transform: translateY(0);
-        opacity: .4
-      }
+    .ai-wlc-chip-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--ink);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
-      30% {
-        transform: translateY(-5px);
-        opacity: 1
-      }
+    .ai-wlc-chip-sub {
+      font-size: 0.67rem;
+      color: var(--ink3);
+      margin-top: 0.08rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ai-wlc-chip-arr {
+      font-size: 0.85rem;
+      color: var(--ink3);
+      flex-shrink: 0;
+    }
+
+    @keyframes spinOrbit {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes spinOrbitRev {
+      to { transform: rotate(-360deg); }
     }
 
     .ai-md-h {
@@ -5872,16 +6003,20 @@
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="brand">
-      <div class="brand-logo">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="url(#g1)" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round" />
-          <defs>
-            <linearGradient id="g1" x1="2" y1="2" x2="22" y2="22">
-              <stop offset="0%" stop-color="#a78bfa" />
-              <stop offset="100%" stop-color="#38bdf8" />
-            </linearGradient>
-          </defs>
+      <div class="brand-logo" style="background: #0d1117; box-shadow: 0 2px 8px rgba(34,211,238,.2), 0 0 0 1px rgba(129,140,248,.2); padding: 4px; border-radius: 50%; display: flex; align-items: center; justify-content: center">
+        <svg width="18" height="18" viewBox="0 0 72 72" fill="none">
+          <g style="transform-origin:36px 36px;animation:spinOrbit 12s linear infinite">
+            <ellipse cx="36" cy="36" rx="22" ry="9" stroke="#22d3ee" stroke-width="2" transform="rotate(-30 36 36)"/>
+            <circle cx="14" cy="36" r="2.5" fill="#818cf8" opacity="0.85" transform="rotate(-30 36 36)"/>
+          </g>
+          <g style="transform-origin:36px 36px;animation:spinOrbitRev 15s linear infinite">
+            <ellipse cx="36" cy="36" rx="22" ry="9" stroke="#818cf8" stroke-width="1.8" transform="rotate(30 36 36)" opacity="0.75"/>
+          </g>
+          <g style="transform-origin:36px 36px;animation:spinOrbit 18s linear infinite">
+            <ellipse cx="36" cy="36" rx="22" ry="9" stroke="#a78bfa" stroke-width="1.5" transform="rotate(90 36 36)" opacity="0.55"/>
+            <circle cx="52" cy="22" r="2" fill="#a78bfa" opacity="0.75" transform="rotate(90 36 36)"/>
+          </g>
+          <circle cx="36" cy="36" r="4" fill="#22d3ee"/>
         </svg>
       </div>
       <span class="brand-name">Laksa</span>
@@ -6679,11 +6814,15 @@
   <!-- AI CHAT BUBBLE -->
   <div class="ai-fab" id="aiFab" onclick="toggleAiChat()" title="Tanya AI Keuangan">
     <div class="ai-fab-pulse"></div>
-    <span class="ai-fab-ico ai-fab-ico-open">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
-        stroke-linejoin="round">
-        <path d="M12 2L9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5z" />
-        <path d="M5 5l1 1M19 5l-1 1M5 19l1-1M19 19l-1-1" />
+    <span class="ai-fab-ico ai-fab-ico-open" style="display:flex;align-items:center;justify-content:center">
+      <svg width="24" height="24" viewBox="0 0 72 72" fill="none">
+        <g style="transform-origin:36px 36px;animation:spinOrbit 12s linear infinite">
+          <ellipse cx="36" cy="36" rx="22" ry="9" stroke="white" stroke-width="2.5" transform="rotate(-30 36 36)"/>
+        </g>
+        <g style="transform-origin:36px 36px;animation:spinOrbitRev 15s linear infinite">
+          <ellipse cx="36" cy="36" rx="22" ry="9" stroke="white" stroke-width="2" transform="rotate(30 36 36)" opacity="0.65"/>
+        </g>
+        <circle cx="36" cy="36" r="4" fill="white"/>
       </svg>
     </span>
     <span class="ai-fab-ico ai-fab-ico-close">
@@ -6699,9 +6838,19 @@
   <div class="ai-panel" id="aiPanel">
     <div class="ai-hdr">
       <div class="ai-hdr-ava">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2L9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5z" />
+        <svg width="22" height="22" viewBox="0 0 72 72" fill="none">
+          <g style="transform-origin:36px 36px;animation:spinOrbit 12s linear infinite">
+            <ellipse cx="36" cy="36" rx="22" ry="9" stroke="#22d3ee" stroke-width="2" transform="rotate(-30 36 36)"/>
+            <circle cx="14" cy="36" r="2.5" fill="#818cf8" opacity="0.85" transform="rotate(-30 36 36)"/>
+          </g>
+          <g style="transform-origin:36px 36px;animation:spinOrbitRev 15s linear infinite">
+            <ellipse cx="36" cy="36" rx="22" ry="9" stroke="#818cf8" stroke-width="1.8" transform="rotate(30 36 36)" opacity="0.75"/>
+          </g>
+          <g style="transform-origin:36px 36px;animation:spinOrbit 18s linear infinite">
+            <ellipse cx="36" cy="36" rx="22" ry="9" stroke="#a78bfa" stroke-width="1.5" transform="rotate(90 36 36)" opacity="0.55"/>
+            <circle cx="52" cy="22" r="2" fill="#a78bfa" opacity="0.75" transform="rotate(90 36 36)"/>
+          </g>
+          <circle cx="36" cy="36" r="4" fill="#22d3ee"/>
         </svg>
       </div>
       <div class="ai-hdr-info">
@@ -6718,6 +6867,19 @@
       </button>
     </div>
     <div class="ai-msgs" id="aiMsgs"></div>
+    <!-- WELCOME SCREEN — tampil hanya saat aiMsgs kosong -->
+    <div class="ai-welcome" id="aiWelcomeScreen">
+      <div class="ai-wlc-hero">
+        <div class="ai-wlc-greeting" id="aiWlcGreeting">Selamat datang kembali</div>
+        <div class="ai-wlc-name" id="aiWlcName">—</div>
+      </div>
+      <div class="ai-wlc-card" id="aiWlcCard">
+        <div class="ai-wlc-card-lbl">Kekayaan bersih</div>
+        <div class="ai-wlc-card-val" id="aiWlcNetWorth">—</div>
+        <div class="ai-wlc-card-meta" id="aiWlcMeta"></div>
+      </div>
+      <div class="ai-wlc-chips" id="aiWlcChips"></div>
+    </div>
     <div class="ai-suggestions" id="aiSugs"></div>
     <div class="ai-input-row">
       <textarea class="ai-input" id="aiInput" placeholder="Tanya soal keuanganmu…" rows="1" onkeydown="aiKeyDown(event)"
@@ -8760,20 +8922,163 @@
     });
 
     function aiWelcome() {
-      const s = getSet();
-      const name = s.name || 'Kamu';
-      const txs = getTx();
-      const now = thisMon();
+      const _prof = typeof getProfile === 'function' ? getProfile() : null; 
+      const _set = typeof getSet === 'function' ? getSet() : {};
+      const name = _prof?.name || _set.name || 'Kamu';
+      const txs = typeof getTx === 'function' ? getTx() : [];
+      const accs = typeof getAccs === 'function' ? getAccs() : [];
+      const goals = typeof getGoals === 'function' ? getGoals() : [];
+      const now = typeof thisMon === 'function' ? thisMon() : '';
       const mTx = txs.filter(t => mKey(t.date) === now);
       const inc = mTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
       const exp = mTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-      let welcome = `Halo ${name}! 👋 Aku Laksa.na, asisten keuanganmu di Laksa.`;
-      if (txs.length === 0) {
-        welcome += ` Sepertinya kamu belum punya data transaksi. Mulai catat dulu yuk, nanti aku bisa bantu analisis keuanganmu! 💪`;
-      } else {
-        welcome += ` Bulan ini kamu punya **${fCur(inc)}** pemasukan dan **${fCur(exp)}** pengeluaran. Ada yang ingin kamu tanyakan?`;
+      const totalBal = accs.reduce((s, a) => s + (a.balance || 0), 0);
+
+      // Isi welcome screen
+      const wScreen = el('aiWelcomeScreen');
+      const wName = el('aiWlcName');
+      const wNW = el('aiWlcNetWorth');
+      const wMeta = el('aiWlcMeta');
+      const wChips = el('aiWlcChips');
+      const wGreeting = el('aiWlcGreeting');
+
+      if (!wScreen) return; // fallback jika elemen tidak ditemukan
+
+      // Greeting berdasarkan waktu
+      const hr = new Date().getHours();
+      const timeGreet = hr < 11 ? 'Selamat pagi' : hr < 15 ? 'Selamat siang' : hr < 18 ? 'Selamat sore' : 'Selamat malam';
+      if (wGreeting) wGreeting.textContent = timeGreet;
+
+      // Nama user
+      if (wName) wName.textContent = name;
+
+      // Net worth
+      if (wNW) wNW.textContent = fCur(totalBal);
+
+      // Meta row (pengeluaran, rekening, target)
+      if (wMeta) {
+        const activeGoals = goals.filter(g => g.current < g.target);
+        wMeta.innerHTML = `
+          <div class="ai-wlc-meta-item">
+            <div class="ai-wlc-meta-val neg">${exp > 0 ? '−' + fCur(exp) : fCur(0)}</div>
+            <div class="ai-wlc-meta-lbl">Keluar ${now.slice(5).replace('-', '/')}</div>
+          </div>
+          <div class="ai-wlc-meta-item">
+            <div class="ai-wlc-meta-val">${accs.length}</div>
+            <div class="ai-wlc-meta-lbl">Rekening</div>
+          </div>
+          ${activeGoals.length > 0 ? `
+          <div class="ai-wlc-meta-item">
+            <div class="ai-wlc-meta-val">${activeGoals.length}</div>
+            <div class="ai-wlc-meta-lbl">Target aktif</div>
+          </div>` : ''}
+        `;
       }
-      aiAppendMsg('bot', welcome);
+
+      // Suggestion chips — dinamis berdasarkan kondisi
+      if (wChips) {
+        const chips = [];
+
+        // Chip 1 — selalu ada
+        chips.push({
+          icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+          title: 'Catat transaksi',
+          sub: 'Ketik natural — "beli kopi 25rb di alfamart"',
+          prompt: null, // langsung fokus ke input
+          action: 'focus'
+        });
+
+        // Chip 2 — analisis jika ada data
+        if (txs.length > 0) {
+          chips.push({
+            icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
+            title: 'Analisis keuangan bulan ini',
+            sub: `Pengeluaran ${fCur(exp)} · lihat tren & insight`,
+            prompt: 'Analisis keuangan aku bulan ini, apa yang perlu diperhatikan?',
+            action: 'prompt'
+          });
+        } else {
+          chips.push({
+            icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+            title: 'Apa yang bisa kamu lakukan?',
+            sub: 'Pelajari fitur-fitur Laksa.na',
+            prompt: 'Apa saja yang bisa kamu lakukan?',
+            action: 'prompt'
+          });
+        }
+
+        // Chip 3 — target atau tagihan
+        const pendingGoal = goals.find(g => g.current < g.target);
+        if (pendingGoal) {
+          const pct = pendingGoal.target > 0 ? Math.round((pendingGoal.current / pendingGoal.target) * 100) : 0;
+          chips.push({
+            icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+            title: `Target: ${pendingGoal.name}`,
+            sub: `${pct}% dari ${fCur(pendingGoal.target)} · deadline ${pendingGoal.deadline ? fDate(pendingGoal.deadline) : '—'}`,
+            prompt: `Bagaimana progress target tabungan "${pendingGoal.name}" aku? Berikan saran.`,
+            action: 'prompt'
+          });
+        } else {
+          chips.push({
+            icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
+            title: 'Lihat semua fitur',
+            sub: 'Anggaran, tagihan, laporan, scan struk',
+            prompt: 'Jelaskan semua fitur yang ada di aplikasi Laksa ini.',
+            action: 'prompt'
+          });
+        }
+
+        // Render chips
+        wChips.innerHTML = chips.map((c, i) => `
+          <button class="ai-wlc-chip" onclick="aiWlcChipClick(${i})" data-prompt="${c.prompt || ''}" data-action="${c.action}">
+            <div class="ai-wlc-chip-icon">${c.icon}</div>
+            <div class="ai-wlc-chip-body">
+              <div class="ai-wlc-chip-title">${esc(c.title)}</div>
+              <div class="ai-wlc-chip-sub">${esc(c.sub)}</div>
+            </div>
+            <div class="ai-wlc-chip-arr">›</div>
+          </button>
+        `).join('');
+      }
+
+      // Tampilkan welcome screen, sembunyikan aiMsgs jika kosong
+      wScreen.classList.remove('hidden');
+    }
+
+    function aiWlcChipClick(idx) {
+      const chip = el('aiWlcChips')?.querySelectorAll('.ai-wlc-chip')[idx];
+      if (!chip) return;
+      const action = chip.dataset.action;
+      const prompt = chip.dataset.prompt;
+
+      if (action === 'focus') {
+        el('aiInput')?.focus();
+        return;
+      }
+
+      if (action === 'prompt' && prompt) {
+        // Sembunyikan welcome screen
+        aiHideWelcome();
+        // Kirim prompt seolah user mengetik
+        const input = el('aiInput');
+        if (input) { input.value = prompt; }
+        aiSend();
+      }
+    }
+
+    function aiHideWelcome() {
+      const ws = el('aiWelcomeScreen');
+      if (ws) ws.classList.add('hidden');
+    }
+
+    function aiResetChat() {
+      aiHistory = []; aiWelcomed = false; aiLastPage = '';
+      const msgs = el('aiMsgs'); if (msgs) msgs.innerHTML = '';
+      const sugs = el('aiSugs'); if (sugs) { sugs.innerHTML = ''; sugs.style.display = 'none'; }
+      const ws = el('aiWelcomeScreen'); if (ws) ws.classList.remove('hidden');
+      aiWelcome();
+      aiWelcomed = true;
+      aiUpdateSugs();
     }
 
     function aiGetContext() {
@@ -8923,6 +9228,7 @@ Jika ada transaksi yang perlu dicatat, isi field "transaction":
     }
 
     async function aiSend() {
+      if (typeof aiHideWelcome === 'function') aiHideWelcome();
       const inp = el('aiInput');
       const msg = (inp.value || '').trim();
       if (!msg || aiTyping) return;
@@ -9174,6 +9480,7 @@ Jika ada transaksi yang perlu dicatat, isi field "transaction":
     }
 
     function aiAppendMsg(role, text) {
+      if (typeof aiHideWelcome === 'function') aiHideWelcome();
       const wrap = el('aiMsgs');
       const now = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
       const html = role === 'bot' ? aiRenderMarkdown(text) : text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
