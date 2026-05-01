@@ -1284,7 +1284,8 @@ Aturan JSON:
           const match = raw.match(/\{[\s\S]*\}/);
           if (match) {
             const parsed = JSON.parse(match[0]);
-            answer = parsed.answer || raw;
+            const textBeforeJson = raw.substring(0, match.index).trim();
+            answer = parsed.answer || textBeforeJson || "Tentu, silakan cek detail transaksi berikut:";
             followups = Array.isArray(parsed.followups) ? parsed.followups : [];
             transaction = parsed.transaction || null;
           }
@@ -1317,9 +1318,10 @@ Aturan JSON:
     // ── TRANSACTION CONFIRM BUBBLE ──
     function aiAppendTxConfirm(tx) {
       const wrap = el('aiMsgs');
-      const typeLabel = tx.type === 'income' ? 'Pemasukan' : 'Pengeluaran';
-      const typeClass = tx.type === 'income' ? 'inc' : 'exp';
-      const typeIco = tx.type === 'income' ? '↑' : '↓';
+      const txType = (tx.type || '').toLowerCase();
+      const typeLabel = txType === 'income' ? 'Pemasukan' : txType === 'transfer' ? 'Transfer' : 'Pengeluaran';
+      const typeClass = txType === 'income' ? 'inc' : txType === 'transfer' ? '' : 'exp';
+      const typeIco = txType === 'income' ? '↑' : txType === 'transfer' ? '⇄' : '↓';
       const txId = 'txc_' + Date.now();
       const div = document.createElement('div');
       div.className = 'ai-msg bot';
@@ -1333,8 +1335,8 @@ Aturan JSON:
       <div class="ai-tx-confirm-rows">
         <div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Jenis</span><span class="ai-tx-confirm-val ${typeClass}">${typeIco} ${typeLabel}</span></div>
         <div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Jumlah</span><span class="ai-tx-confirm-val ${typeClass}">${fCur(tx.amount)}</span></div>
-        <div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Rekening</span><span class="ai-tx-confirm-val">${esc(tx.account_name)}</span></div>
-        <div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Kategori</span><span class="ai-tx-confirm-val">${esc(tx.category_name || 'Lainnya')}</span></div>
+        <div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Rekening</span><span class="ai-tx-confirm-val">${(tx.type||'').toLowerCase() === 'transfer' ? esc(tx.from_account_name) + ' ➔ ' + esc(tx.to_account_name) : esc(tx.account_name)}</span></div>
+        <div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Kategori</span><span class="ai-tx-confirm-val">${(tx.type||'').toLowerCase() === 'transfer' ? 'Transfer' : esc(tx.category_name || 'Lainnya')}</span></div>
         <div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Catatan</span><span class="ai-tx-confirm-val">${esc(tx.note || '-')}</span></div>
         <div class="ai-tx-confirm-row"><span class="ai-tx-confirm-lbl">Tanggal</span><span class="ai-tx-confirm-val">${tx.date || today()}</span></div>
       </div>
@@ -1358,41 +1360,61 @@ Aturan JSON:
     }
 
     async function aiConfirmTx(tx, bubbleId) {
-      // Resolve account_id dan category_id dari nama
       const accs = getAccs();
       const cats = getCats();
-      const acc = accs.find(a => a.name.toLowerCase().includes((tx.account_name || '').toLowerCase())) || accs[0];
-      const cat = cats.find(c => c.name.toLowerCase().includes((tx.category_name || '').toLowerCase())) || cats[cats.length - 1];
-      if (!acc) { toast('Rekening tidak ditemukan.', 'err'); return; }
+      const bubble = el(bubbleId);
 
-      if (tx.type === 'expense' && Number(tx.amount) > (acc.balance || 0)) {
-        const bubble = el(bubbleId);
-        if (bubble) {
-          const btns = bubble.querySelector('.ai-tx-confirm-btns');
-          if (btns) btns.innerHTML = '<div class="ai-tx-confirm-done" style="color:var(--expense)">❌ Gagal: Saldo tidak mencukupi.</div>';
+      let reqs = [];
+      const amt = Number(tx.amount);
+      const dt = tx.date || today();
+      const nt = tx.note || '';
+      const txType = (tx.type || '').toLowerCase();
+
+      if (txType === 'transfer') {
+        const accFrom = accs.find(a => a.name.toLowerCase().includes((tx.from_account_name || '').toLowerCase()));
+        const accTo = accs.find(a => a.name.toLowerCase().includes((tx.to_account_name || '').toLowerCase()));
+        if (!accFrom || !accTo) { toast('Rekening asal atau tujuan tidak ditemukan.', 'err'); return; }
+        if (amt > (accFrom.balance || 0)) {
+          if (bubble) {
+            const btns = bubble.querySelector('.ai-tx-confirm-btns');
+            if (btns) btns.innerHTML = '<div class="ai-tx-confirm-done" style="color:var(--expense)">❌ Gagal: Saldo rekening asal tidak cukup.</div>';
+          }
+          toast('Saldo rekening asal tidak cukup!', 'err');
+          return;
         }
-        toast('Saldo rekening tidak cukup!', 'err');
-        return;
+        
+        let tfCat = cats.find(c => c.name.toLowerCase() === 'transfer' || c.name.toLowerCase() === 'lainnya');
+        if (!tfCat) tfCat = cats[0];
+        
+        reqs.push({ type: 'expense', amount: amt, date: dt, account_id: accFrom.id, category_id: tfCat.id, note: nt + ' (Transfer Keluar)', source: 'ai-chat' });
+        reqs.push({ type: 'income', amount: amt, date: dt, account_id: accTo.id, category_id: tfCat.id, note: nt + ' (Transfer Masuk)', source: 'ai-chat' });
+      } else {
+        const acc = accs.find(a => a.name.toLowerCase().includes((tx.account_name || '').toLowerCase())) || accs[0];
+        const cat = cats.find(c => c.name.toLowerCase().includes((tx.category_name || '').toLowerCase())) || cats[cats.length - 1];
+        if (!acc) { toast('Rekening tidak ditemukan.', 'err'); return; }
+
+        if (txType === 'expense' && amt > (acc.balance || 0)) {
+          if (bubble) {
+            const btns = bubble.querySelector('.ai-tx-confirm-btns');
+            if (btns) btns.innerHTML = '<div class="ai-tx-confirm-done" style="color:var(--expense)">❌ Gagal: Saldo tidak cukup.</div>';
+          }
+          toast('Saldo rekening tidak cukup!', 'err');
+          return;
+        }
+        reqs.push({ type: txType, amount: amt, date: dt, account_id: acc.id, category_id: cat.id, note: nt, source: 'ai-chat' });
       }
 
-      const bubble = el(bubbleId);
       if (bubble) {
         const btns = bubble.querySelector('.ai-tx-confirm-btns');
         if (btns) btns.innerHTML = '<div class="ai-tx-confirm-done">⏳ Menyimpan…</div>';
       }
 
       try {
-        await api('POST', '/transactions', {
-          type: tx.type,
-          amount: tx.amount,
-          date: tx.date || today(),
-          account_id: acc.id,
-          category_id: cat.id,
-          note: tx.note || '',
-          source: 'ai-chat'
-        });
+        for (const req of reqs) {
+          await api('POST', '/transactions', req);
+        }
         // Refresh data
-        const m = (tx.date || today()).slice(0, 7);
+        const m = dt.slice(0, 7);
         await Promise.all([fetchTx(m), fetchAccs()]);
         if (curPage === 'dashboard' || curPage === 'transactions') refresh();
 
