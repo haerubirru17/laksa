@@ -1218,17 +1218,27 @@ ${goalStr}
 10 Transaksi Terakhir:
 ${recent || 'Belum ada transaksi'}
 
+## 6. CATAT TAGIHAN (BILLS)
+Jika user meminta menambahkan tagihan atau daftar tagihan (misal daftar tagihan kartu kredit, listrik):
+- Kamu WAJIB menyertakan array JSON \`bills\` yang berisi objek-objek tagihan.
+- Properti tagihan: \`name\` (string, wajib), \`bill_type\` (string, misal: "Kartu Kredit", "Paylater", "Listrik", dll), \`amount\` (angka murni, opsional, isi 0 jika tidak ada), \`due_date\` (string YYYY-MM-DD, wajib jika ada tanggal jatuh tempo), \`status\` (string "unpaid" atau "paid").
+- Jangan mengulangi rincian secara panjang lebar di teks \`answer\`.
+
 ## FORMAT RESPONS (WAJIB JSON)
 Selalu balas dalam format JSON murni TANPA markdown block (\`\`\`json). Harus persis seperti ini:
-{"answer":"Tentu, ini ringkasannya...","followups":["Analisis pengeluaranku bulan ini","Bantu aku buat anggaran"],"transaction":null}
+{"answer":"Tentu, ini ringkasannya...","followups":["Analisis pengeluaranku bulan ini","Bantu aku buat anggaran"],"transaction":null,"bills":null}
 
 Jika MENCATAT TRANSAKSI:
-{"answer":"Tentu, silakan periksa konfirmasi transaksi berikut:","followups":[],"transaction":{"type":"income","amount":5000000,"account_name":"mandiri","category_name":"Gaji","note":"Gaji bulan ini","date":"YYYY-MM-DD"}}
+{"answer":"Tentu, silakan periksa konfirmasi transaksi berikut:","followups":[],"transaction":{"type":"income","amount":5000000,"account_name":"mandiri","category_name":"Gaji","note":"Gaji bulan ini","date":"YYYY-MM-DD"},"bills":null}
+
+Jika MENCATAT TAGIHAN:
+{"answer":"Daftar tagihan siap dicatat:","followups":[],"transaction":null,"bills":[{"name":"Kartu Kredit MNC","bill_type":"Kartu Kredit","amount":0,"due_date":"2026-05-03","status":"unpaid"}]}
 
 Aturan JSON:
-- \`answer\`: Singkat dan ramah. Jika mencatat transaksi, cukup tulis "Ini konfirmasinya:" (jangan ulangi rincian nominal di teks agar tidak redundant).
-- \`followups\`: Berikan 1-2 opsi respons lanjutan DARI SUDUT PANDANG PENGGUNA (First-Person POV). Harus persis seolah-olah PENGGUNA yang mengatakannya KEPADAMU. Contoh BENAR: "Bantu aku catat transaksi", "Buatkan aku anggaran". Contoh SALAH: "Ada yang bisa aku bantu?", "Mau catat transaksi?".
-- \`transaction\`: Harus \`null\` atau objek valid. Wajib diisi jika user ingin mencatat transaksi.`;
+- \`answer\`: Singkat dan ramah. Jika mencatat transaksi atau tagihan, jangan ulangi rincian di teks agar tidak redundant.
+- \`followups\`: Berikan 1-2 opsi respons lanjutan DARI SUDUT PANDANG PENGGUNA (First-Person POV).
+- \`transaction\`: Harus \`null\` atau objek valid.
+- \`bills\`: Harus \`null\` atau array dari objek tagihan valid.`;
 }
 
 async function aiSend() {
@@ -1289,15 +1299,16 @@ async function aiCallGroq() {
     typingEl.remove();
 
     // Parse JSON response
-    let answer = raw, followups = [], transaction = null;
+    let answer = raw, followups = [], transaction = null, bills = null;
     try {
       const match = raw.match(/\{[\s\S]*\}/);
       if (match) {
         const parsed = JSON.parse(match[0]);
         const textBeforeJson = raw.substring(0, match.index).trim();
-        answer = parsed.answer || textBeforeJson || "Tentu, silakan cek detail transaksi berikut:";
+        answer = parsed.answer || textBeforeJson || "Tentu, silakan cek detail berikut:";
         followups = Array.isArray(parsed.followups) ? parsed.followups : [];
         transaction = parsed.transaction || null;
+        bills = parsed.bills || null;
         if (transaction && transaction.from_account_name && transaction.to_account_name && !transaction.account_name) {
           transaction.type = 'transfer';
         }
@@ -1310,6 +1321,10 @@ async function aiCallGroq() {
     // Jika AI deteksi transaksi → tampilkan bubble konfirmasi
     if (transaction && transaction.amount && (transaction.account_name || (transaction.from_account_name && transaction.to_account_name))) {
       aiAppendTxConfirm(transaction);
+    } else if (bills && Array.isArray(bills) && bills.length > 0) {
+      if (typeof aiAppendBillsConfirm === 'function') {
+        aiAppendBillsConfirm(bills);
+      }
     }
 
     if (followups.length) {
@@ -1484,6 +1499,84 @@ function aiCancelTx(bubbleId) {
     if (btns) btns.innerHTML = '<div class="ai-tx-confirm-done">✗ Dibatalkan</div>';
   }
 }
+
+window.aiAppendBillsConfirm = function(bills) {
+  const wrap = el('aiMsgs');
+  const bId = 'bills_' + Date.now();
+  const div = document.createElement('div');
+  div.className = 'ai-msg bot';
+  div.id = bId;
+
+  let rowsHtml = bills.map((b, i) => `
+    <div style="padding:8px 0; border-bottom:1px solid rgba(0,0,0,0.05); ${i === bills.length-1 ? 'border:none;' : ''}">
+      <div style="font-weight:600; font-size:0.9rem; color:var(--ink);">${esc(b.name)}</div>
+      <div style="display:flex; justify-content:space-between; margin-top:4px; font-size:0.8rem; color:var(--ink2);">
+        <span>${esc(b.bill_type || 'Lainnya')}</span>
+        <span style="color:${b.status === 'paid' ? 'var(--income)' : 'var(--expense)'}">${b.status === 'paid' ? 'Lunas' : 'Belum Lunas'}</span>
+      </div>
+      ${b.due_date ? `<div style="font-size:0.75rem; color:var(--ink3); margin-top:2px;">Jatuh tempo: ${b.due_date}</div>` : ''}
+    </div>
+  `).join('');
+
+  div.innerHTML = `
+    <div class="ai-tx-confirm">
+      <div class="ai-tx-confirm-title" style="background:var(--expense); color:white;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></svg>
+        Konfirmasi ${bills.length} Tagihan
+      </div>
+      <div class="ai-tx-confirm-rows" style="padding:8px 12px; max-height:200px; overflow-y:auto;">
+        ${rowsHtml}
+      </div>
+      <div class="ai-tx-confirm-btns">
+        <button class="ai-tx-btn-ok" onclick="aiConfirmBills(${JSON.stringify(bills).replace(/"/g, '&quot;')},'${bId}')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Simpan Semua
+        </button>
+        <button class="ai-tx-btn-cancel" onclick="aiCancelTx('${bId}')">Batal</button>
+      </div>
+    </div>`;
+  wrap.appendChild(div);
+  requestAnimationFrame(() => { wrap.scrollTop = wrap.scrollHeight; });
+};
+
+window.aiConfirmBills = async function(bills, bubbleId) {
+  const bubble = el(bubbleId);
+  if (bubble) {
+    const btns = bubble.querySelector('.ai-tx-confirm-btns');
+    if (btns) btns.innerHTML = '<div class="ai-tx-confirm-done">⏳ Menyimpan...</div>';
+  }
+
+  let successCount = 0;
+  try {
+    for (const b of bills) {
+      await api('POST', '/bills', {
+        name: b.name,
+        bill_type: b.bill_type || 'lainnya',
+        amount: Number(b.amount) || 0,
+        due_type: b.due_date ? 'once' : 'monthly',
+        due_date: b.due_date || null,
+        status: b.status === 'paid' ? 'paid' : 'unpaid'
+      });
+      successCount++;
+    }
+    
+    // Refresh
+    if (typeof fetchBills === 'function') await fetchBills();
+    if (curPage === 'keuangan') refresh();
+
+    if (bubble) {
+      const btns = bubble.querySelector('.ai-tx-confirm-btns');
+      if (btns) btns.innerHTML = \`<div class="ai-tx-confirm-done">✅ \${successCount} tagihan berhasil dicatat!</div>\`;
+    }
+    toast(\`\${successCount} tagihan dicatat!\`, 'ok');
+  } catch(e) {
+    if (bubble) {
+      const btns = bubble.querySelector('.ai-tx-confirm-btns');
+      if (btns) btns.innerHTML = \`<div class="ai-tx-confirm-done" style="color:var(--expense)">❌ Gagal: \${esc(e.message)}</div>\`;
+    }
+    toast('Gagal simpan tagihan: ' + e.message, 'err');
+  }
+};
 
 function aiRenderMarkdown(text) {
   // Process line by line for predictable output
