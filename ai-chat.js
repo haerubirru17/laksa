@@ -1288,6 +1288,9 @@ Aturan JSON:
             answer = parsed.answer || textBeforeJson || "Tentu, silakan cek detail transaksi berikut:";
             followups = Array.isArray(parsed.followups) ? parsed.followups : [];
             transaction = parsed.transaction || null;
+            if (transaction && transaction.from_account_name && transaction.to_account_name && !transaction.account_name) {
+              transaction.type = 'transfer';
+            }
           }
         } catch (e) { answer = raw; }
 
