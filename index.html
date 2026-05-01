@@ -8877,10 +8877,15 @@
     };
 
     function aiUpdateSugs() {
-      const page = curPage || 'dashboard';
-      const sugs = AI_SUGS[page] || AI_SUGS.dashboard;
       const wrap = el('aiSugs');
       if (!wrap) return;
+      const ws = el('aiWelcomeScreen');
+      if (ws && !ws.classList.contains('hidden')) {
+        wrap.style.display = 'none';
+        return;
+      }
+      const page = curPage || 'dashboard';
+      const sugs = AI_SUGS[page] || AI_SUGS.dashboard;
       wrap.innerHTML = sugs.map(s => `<button class="ai-sug" onclick="aiSendSug(this,event)">${s}</button>`).join('');
       wrap.style.display = 'flex';
     }
@@ -8983,7 +8988,7 @@
       if (wChips) {
         const chips = [];
 
-        // Chip 1 — selalu ada (Hanya catat transaksi, suggestion dihapus atas request)
+        // Chip 1 — selalu ada
         chips.push({
           icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
           title: 'Catat transaksi',
@@ -8991,6 +8996,46 @@
           prompt: null,
           action: 'focus'
         });
+
+        // Chip 2 — analisis jika ada data
+        if (txs.length > 0) {
+          chips.push({
+            icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
+            title: 'Analisis keuangan bulan ini',
+            sub: `Pengeluaran ${fCur(exp)} · lihat tren & insight`,
+            prompt: 'Analisis keuangan aku bulan ini, apa yang perlu diperhatikan?',
+            action: 'prompt'
+          });
+        } else {
+          chips.push({
+            icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+            title: 'Apa yang bisa kamu lakukan?',
+            sub: 'Pelajari fitur-fitur Laksa.na',
+            prompt: 'Apa saja yang bisa kamu lakukan?',
+            action: 'prompt'
+          });
+        }
+
+        // Chip 3 — target atau tagihan
+        const pendingGoal = goals.find(g => g.current < g.target);
+        if (pendingGoal) {
+          const pct = pendingGoal.target > 0 ? Math.round((pendingGoal.current / pendingGoal.target) * 100) : 0;
+          chips.push({
+            icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+            title: `Target: ${pendingGoal.name}`,
+            sub: `${pct}% dari ${fCur(pendingGoal.target)} · deadline ${pendingGoal.deadline ? fDate(pendingGoal.deadline) : '—'}`,
+            prompt: `Bagaimana progress target tabungan "${pendingGoal.name}" aku? Berikan saran.`,
+            action: 'prompt'
+          });
+        } else {
+          chips.push({
+            icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
+            title: 'Lihat semua fitur',
+            sub: 'Anggaran, tagihan, laporan, scan struk',
+            prompt: 'Jelaskan semua fitur yang ada di aplikasi Laksa ini.',
+            action: 'prompt'
+          });
+        }
 
         // Render chips
         wChips.innerHTML = chips.map((c, i) => `
@@ -9036,7 +9081,10 @@
 
     function aiHideWelcome() {
       const ws = el('aiWelcomeScreen');
-      if (ws) ws.classList.add('hidden');
+      if (ws && !ws.classList.contains('hidden')) {
+        ws.classList.add('hidden');
+        aiUpdateSugs();
+      }
     }
 
     function aiResetChat() {
