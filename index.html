@@ -4404,6 +4404,10 @@
     @keyframes spinOrbitRev {
       to { transform: rotate(-360deg); }
     }
+    @keyframes pulseLogo {
+      0%, 100% { opacity: 0.65; transform: scale(0.92); }
+      50% { opacity: 1; transform: scale(1.08); }
+    }
 
     .ai-md-h {
       font-size: .83rem;
@@ -6003,20 +6007,20 @@
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="brand">
-      <div class="brand-logo" style="background: #0d1117; box-shadow: 0 2px 8px rgba(34,211,238,.2), 0 0 0 1px rgba(129,140,248,.2); padding: 4px; border-radius: 50%; display: flex; align-items: center; justify-content: center">
-        <svg width="18" height="18" viewBox="0 0 72 72" fill="none">
+      <div class="brand-logo" style="background: transparent; padding: 0; box-shadow: 0 4px 16px rgba(59,130,246,.2); border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center">
+        <svg width="36" height="36" viewBox="0 0 72 72" fill="none">
           <g style="transform-origin:36px 36px;animation:spinOrbit 12s linear infinite">
-            <ellipse cx="36" cy="36" rx="22" ry="9" stroke="#22d3ee" stroke-width="2" transform="rotate(-30 36 36)"/>
-            <circle cx="14" cy="36" r="2.5" fill="#818cf8" opacity="0.85" transform="rotate(-30 36 36)"/>
+            <ellipse cx="36" cy="36" rx="28" ry="11" stroke="#3b82f6" stroke-width="2.5" transform="rotate(-30 36 36)"/>
+            <circle cx="12" cy="36" r="3" fill="#60a5fa" opacity="0.85" transform="rotate(-30 36 36)"/>
           </g>
           <g style="transform-origin:36px 36px;animation:spinOrbitRev 15s linear infinite">
-            <ellipse cx="36" cy="36" rx="22" ry="9" stroke="#818cf8" stroke-width="1.8" transform="rotate(30 36 36)" opacity="0.75"/>
+            <ellipse cx="36" cy="36" rx="28" ry="11" stroke="#60a5fa" stroke-width="2.2" transform="rotate(30 36 36)" opacity="0.8"/>
           </g>
           <g style="transform-origin:36px 36px;animation:spinOrbit 18s linear infinite">
-            <ellipse cx="36" cy="36" rx="22" ry="9" stroke="#a78bfa" stroke-width="1.5" transform="rotate(90 36 36)" opacity="0.55"/>
-            <circle cx="52" cy="22" r="2" fill="#a78bfa" opacity="0.75" transform="rotate(90 36 36)"/>
+            <ellipse cx="36" cy="36" rx="28" ry="11" stroke="#93c5fd" stroke-width="2" transform="rotate(90 36 36)" opacity="0.6"/>
+            <circle cx="56" cy="20" r="2.5" fill="#93c5fd" opacity="0.8" transform="rotate(90 36 36)"/>
           </g>
-          <circle cx="36" cy="36" r="4" fill="#22d3ee"/>
+          <circle cx="36" cy="36" r="4.5" fill="#3b82f6"/>
         </svg>
       </div>
       <span class="brand-name">Laksa</span>
@@ -8979,54 +8983,14 @@
       if (wChips) {
         const chips = [];
 
-        // Chip 1 — selalu ada
+        // Chip 1 — selalu ada (Hanya catat transaksi, suggestion dihapus atas request)
         chips.push({
           icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
           title: 'Catat transaksi',
           sub: 'Ketik natural — "beli kopi 25rb di alfamart"',
-          prompt: null, // langsung fokus ke input
+          prompt: null,
           action: 'focus'
         });
-
-        // Chip 2 — analisis jika ada data
-        if (txs.length > 0) {
-          chips.push({
-            icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
-            title: 'Analisis keuangan bulan ini',
-            sub: `Pengeluaran ${fCur(exp)} · lihat tren & insight`,
-            prompt: 'Analisis keuangan aku bulan ini, apa yang perlu diperhatikan?',
-            action: 'prompt'
-          });
-        } else {
-          chips.push({
-            icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
-            title: 'Apa yang bisa kamu lakukan?',
-            sub: 'Pelajari fitur-fitur Laksa.na',
-            prompt: 'Apa saja yang bisa kamu lakukan?',
-            action: 'prompt'
-          });
-        }
-
-        // Chip 3 — target atau tagihan
-        const pendingGoal = goals.find(g => g.current < g.target);
-        if (pendingGoal) {
-          const pct = pendingGoal.target > 0 ? Math.round((pendingGoal.current / pendingGoal.target) * 100) : 0;
-          chips.push({
-            icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
-            title: `Target: ${pendingGoal.name}`,
-            sub: `${pct}% dari ${fCur(pendingGoal.target)} · deadline ${pendingGoal.deadline ? fDate(pendingGoal.deadline) : '—'}`,
-            prompt: `Bagaimana progress target tabungan "${pendingGoal.name}" aku? Berikan saran.`,
-            action: 'prompt'
-          });
-        } else {
-          chips.push({
-            icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
-            title: 'Lihat semua fitur',
-            sub: 'Anggaran, tagihan, laporan, scan struk',
-            prompt: 'Jelaskan semua fitur yang ada di aplikasi Laksa ini.',
-            action: 'prompt'
-          });
-        }
 
         // Render chips
         wChips.innerHTML = chips.map((c, i) => `
@@ -9052,7 +9016,11 @@
       const prompt = chip.dataset.prompt;
 
       if (action === 'focus') {
-        el('aiInput')?.focus();
+        const inp = el('aiInput');
+        if (inp) {
+          inp.value = 'Catat pengeluaran: ';
+          inp.focus();
+        }
         return;
       }
 
@@ -9222,7 +9190,7 @@ Jika ada transaksi yang perlu dicatat, isi field "transaction":
   - __underline__ untuk insight atau peringatan kritis
   - \`- item\` atau \`1. item\` untuk daftar rekomendasi, tips, atau perbandingan
   - \`### Judul\` untuk memisahkan bagian jika jawaban panjang
-- "followups": 2-3 pertanyaan lanjutan RELEVAN, dari sudut pandang user, Bahasa Indonesia kasual
+- "followups": Berikan 1-2 pertanyaan lanjutan HANYA JIKA user butuh panduan/analisis lebih lanjut. Kosongkan array [] jika obrolan dirasa sudah tuntas, agar tidak beruntun.
 - "transaction": null jika tidak ada transaksi, atau objek transaksi jika ada
 - Jangan tambahkan apapun di luar JSON`;
     }
@@ -9496,7 +9464,23 @@ Jika ada transaksi yang perlu dicatat, isi field "transaction":
       const wrap = el('aiMsgs');
       const div = document.createElement('div');
       div.className = 'ai-msg bot';
-      div.innerHTML = `<div class="ai-typing"><span></span><span></span><span></span></div>`;
+      div.innerHTML = `
+        <div class="ai-hdr-ava" style="width:32px;height:32px;margin-bottom:4px;box-shadow:none!important;background:transparent;animation:pulseLogo 1.5s ease-in-out infinite">
+          <svg width="24" height="24" viewBox="0 0 72 72" fill="none">
+            <g style="transform-origin:36px 36px;animation:spinOrbit 1.5s linear infinite">
+              <ellipse cx="36" cy="36" rx="22" ry="9" stroke="#22d3ee" stroke-width="2" transform="rotate(-30 36 36)"/>
+              <circle cx="14" cy="36" r="2.5" fill="#818cf8" opacity="0.85" transform="rotate(-30 36 36)"/>
+            </g>
+            <g style="transform-origin:36px 36px;animation:spinOrbitRev 2s linear infinite">
+              <ellipse cx="36" cy="36" rx="22" ry="9" stroke="#818cf8" stroke-width="1.8" transform="rotate(30 36 36)" opacity="0.75"/>
+            </g>
+            <g style="transform-origin:36px 36px;animation:spinOrbit 2.5s linear infinite">
+              <ellipse cx="36" cy="36" rx="22" ry="9" stroke="#a78bfa" stroke-width="1.5" transform="rotate(90 36 36)" opacity="0.55"/>
+              <circle cx="52" cy="22" r="2" fill="#a78bfa" opacity="0.75" transform="rotate(90 36 36)"/>
+            </g>
+            <circle cx="36" cy="36" r="4" fill="#22d3ee"/>
+          </svg>
+        </div>`;
       wrap.appendChild(div);
       requestAnimationFrame(() => { wrap.scrollTop = wrap.scrollHeight; });
       return div;
