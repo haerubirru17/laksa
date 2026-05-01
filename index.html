@@ -4786,7 +4786,7 @@
     }
   
     .card-wrap { border-radius: 20px; position: relative; margin-bottom: 14px; }
-    .action-bg { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(34,197,120,0.0) 0%, rgba(34,197,120,0.75) 100%); display: flex; align-items: center; justify-content: flex-end; padding-right: 28px; border-radius: 20px; }
+    .action-bg { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(34,197,120,0.0) 0%, rgba(34,197,120,0.85) 100%); display: flex; align-items: center; justify-content: flex-end; padding-right: 28px; border-radius: 20px; opacity: 0; transition: opacity 0.1s; }
     .check-label { color: rgba(255,255,255,0.95); font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; opacity: 0; transition: opacity 0.1s; }
     .check-circle { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.3); border: 2px solid rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center; font-size: 16px; }
     .bill-card { background: var(--gs-1); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--gs-border); border-radius: 20px; padding: 1.1rem 1.25rem 1rem; position: relative; cursor: grab; user-select: none; will-change: transform; transition: all 0.3s ease; }
@@ -6868,6 +6868,7 @@
         if (card._swipeBound) return;
         card._swipeBound = true;
         const wrap = card.parentElement;
+        const bg = wrap ? wrap.querySelector('.action-bg') : null;
         const lbl = wrap ? wrap.querySelector('.check-label') : null;
         let startX = 0, curX = 0, dragging = false;
         const threshold = 110;
@@ -6876,6 +6877,7 @@
           startX = e.touches ? e.touches[0].clientX : e.clientX;
           dragging = true;
           card.style.transition = 'none';
+          if (bg) bg.style.transition = 'none';
           card.style.cursor = 'grabbing';
         }
         function onMove(e) {
@@ -6884,6 +6886,7 @@
           if (curX < 0) curX = 0;
           const pct = Math.min(curX / threshold, 1);
           card.style.transform = `translateX(${curX}px)`;
+          if (bg) bg.style.opacity = pct;
           if (lbl) lbl.style.opacity = pct;
         }
         async function onEnd() {
@@ -6891,8 +6894,10 @@
           dragging = false;
           card.style.cursor = 'grab';
           card.style.transition = 'transform 0.3s cubic-bezier(.34,1.1,.64,1)';
+          if (bg) bg.style.transition = 'opacity 0.3s';
           if (curX >= threshold) {
             card.style.transform = `translateX(${card.parentElement.offsetWidth}px)`;
+            if (bg) bg.style.opacity = 1;
             if (lbl) lbl.style.opacity = 1;
             const id = card.getAttribute('data-id');
             try {
@@ -6915,10 +6920,12 @@
             } catch(err) {
               toast('Gagal: ' + err.message, 'err');
               card.style.transform = 'translateX(0)';
+              if (bg) bg.style.opacity = 0;
               if (lbl) lbl.style.opacity = 0;
             }
           } else {
             card.style.transform = 'translateX(0)';
+            if (bg) bg.style.opacity = 0;
             if (lbl) lbl.style.opacity = 0;
           }
           curX = 0;
