@@ -1512,7 +1512,10 @@ window.aiAppendBillsConfirm = function(bills) {
 
   let rowsHtml = bills.map((b, i) => `
     <div style="padding:8px 0; border-bottom:1px solid rgba(0,0,0,0.05); ${i === bills.length-1 ? 'border:none;' : ''}">
-      <div style="font-weight:600; font-size:0.9rem; color:var(--ink);">${esc(b.name)}</div>
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div style="font-weight:600; font-size:0.9rem; color:var(--ink);">${esc(b.name)}</div>
+        ${b.amount ? `<div style="font-weight:600; font-size:0.9rem; color:var(--ink);">${fCur(b.amount)}</div>` : ''}
+      </div>
       <div style="display:flex; justify-content:space-between; margin-top:4px; font-size:0.8rem; color:var(--ink2);">
         <span>${esc(b.bill_type || 'Lainnya')}</span>
         <span style="color:${b.status === 'paid' ? 'var(--income)' : 'var(--expense)'}">${b.status === 'paid' ? 'Lunas' : 'Belum Lunas'}</span>
