@@ -4973,7 +4973,38 @@
       background: rgba(15, 23, 42, .88) !important;
       color: #fff !important
     }
-  </style>
+  
+    .card-wrap { border-radius: 20px; position: relative; margin-bottom: 14px; }
+    .action-bg { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(34,197,120,0.0) 0%, rgba(34,197,120,0.75) 100%); display: flex; align-items: center; justify-content: flex-end; padding-right: 28px; border-radius: 20px; }
+    .check-label { color: rgba(255,255,255,0.95); font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; opacity: 0; transition: opacity 0.1s; }
+    .check-circle { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.3); border: 2px solid rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .bill-card { background: var(--gs-1); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--gs-border); border-radius: 20px; padding: 1.1rem 1.25rem 1rem; position: relative; cursor: grab; user-select: none; will-change: transform; transition: all 0.3s ease; }
+    .bill-card.overdue { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); box-shadow: 0 8px 32px rgba(239, 68, 68, 0.15), 0 2px 8px rgba(239, 68, 68, 0.08); }
+    .bill-card.due-soon { background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.28); box-shadow: 0 8px 32px rgba(245, 158, 11, 0.15), 0 2px 8px rgba(245, 158, 11, 0.08); }
+    .bill-card.upcoming { background: rgba(34, 197, 120, 0.12); border-color: rgba(34, 197, 120, 0.2); box-shadow: 0 8px 32px rgba(34, 197, 120, 0.1), 0 2px 8px rgba(34, 197, 120, 0.06); }
+    .bill-card.paid { opacity: 0.65; cursor: default; }
+    .card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+    .card-left { display: flex; align-items: center; gap: 10px; }
+    .bill-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; }
+    .bill-dot.overdue { background: #ef4444; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25); animation: pulse-red 1.8s infinite; }
+    .bill-dot.due-soon { background: #f59e0b; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2); }
+    .bill-dot.upcoming { background: #22c578; box-shadow: 0 0 0 3px rgba(34, 197, 120, 0.2); }
+    .bill-dot.paid { background: var(--income); }
+    @keyframes pulse-red { 0%,100% { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25); } 50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.08); } }
+    .bill-name { font-size: 1rem; font-weight: 600; color: var(--ink); }
+    .bill-meta { font-size: 0.75rem; color: var(--ink3); margin-top: 2px; }
+    .bill-badge { font-size: 0.7rem; font-weight: 600; padding: 0.25rem 0.6rem; border-radius: 50px; white-space: nowrap; }
+    .bill-badge.overdue { background: rgba(239, 68, 68, 0.12); color: var(--expense); border: 1px solid rgba(239, 68, 68, 0.25); }
+    .bill-badge.due-soon { background: rgba(245, 158, 11, 0.15); color: var(--gold); border: 1px solid rgba(245, 158, 11, 0.25); }
+    .bill-badge.upcoming { background: rgba(34, 197, 120, 0.12); color: var(--income); border: 1px solid rgba(34, 197, 120, 0.2); }
+    .bill-badge.paid { background: rgba(16, 185, 129, 0.1); color: var(--income); border: 1px solid rgba(16, 185, 129, 0.2); }
+    .bill-divider { height: 1px; background: var(--gs-border); margin: 0 0 12px; }
+    .card-bottom { display: flex; align-items: center; justify-content: space-between; }
+    .swipe-hint { display: flex; align-items: center; gap: 5px; font-size: 0.7rem; color: var(--ink3); pointer-events:none; }
+    .arrows { display: flex; gap: 2px; align-items: center; pointer-events:none; }
+    .arrows span { display: inline-block; width: 5px; height: 5px; border-top: 1.5px solid var(--ink3); border-right: 1.5px solid var(--ink3); transform: rotate(45deg); pointer-events:none; }
+    .bill-amount { font-family: 'Inter', sans-serif; font-size: 1.125rem; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; pointer-events:none; }
+\n</style>
 </head>
 
 <body>
