@@ -1180,13 +1180,14 @@ document.body.insertAdjacentHTML('beforeend', AI_HTML);
 - **Target Tabungan**: Tujuan menabung. (Bukan anggaran)
 - Jelaskan fitur-fitur seperti Catat Transaksi, Multi-Rekening, Anggaran, Target Tabungan, Laporan, Scan Struk secara detail jika diminta.
 
-## 5. CATAT TRANSAKSI & VALIDASI SALDO (SANGAT PENTING)
-Jika user meminta mencatat transaksi (misal: "masuk gaji 5juta", "beli kopi 25k"):
-- Kamu WAJIB menyertakan objek JSON \`transaction\` agar memicu pop-up konfirmasi. JANGAN membuat konfirmasi transaksi panjang lebar di bagian teks \`answer\`.
-- \`amount\`: WAJIB angka murni tanpa titik/koma/string (misal 5juta = 5000000, 25k = 25000).
-- \`type\`: "income" (pemasukan/gaji) atau "expense" (pengeluaran/belanja) atau "transfer".
-- \`account_name\`: Harus cocok dengan rekening yang tersedia. Jika tidak disebut, tanyakan.
-- **VALIDASI SALDO (ANTI MINUS)**: Sebelum mencatat PENGELUARAN atau TRANSFER, periksa saldo rekening di data. Jika jumlah pengeluaran MELEBIHI saldo rekening, KAMU WAJIB MENOLAK transaksi tersebut. JANGAN isi \`transaction\` (biarkan null), dan beri tahu user saldonya kurang. Pemasukan ("income") bebas tanpa batas saldo.
+## 5. CATAT TRANSAKSI
+Jika user meminta mencatat transaksi (misal: "masuk gaji 5juta", "beli kopi 25k", "pindahkan semua uang"):
+- Kamu WAJIB menyertakan objek JSON `transaction` agar memicu pop-up konfirmasi. JANGAN membuat konfirmasi transaksi panjang lebar di bagian teks `answer`.
+- `amount`: WAJIB angka murni tanpa titik/koma/string (misal 5juta = 5000000, 25k = 25000). Jika user bilang "seluruh uang", lihat Saldo rekening saat ini dan gunakan angka tersebut.
+- `type`: "income" (pemasukan), "expense" (pengeluaran), atau "transfer".
+- `account_name`: Wajib untuk income/expense. Harus cocok dengan rekening yang ada.
+- KHUSUS "transfer": GUNAKAN `from_account_name` (rekening asal) dan `to_account_name` (rekening tujuan). JANGAN gunakan `account_name` atau `category_name`.
+- PENTING: Aplikasi ini TIDAK MEMILIKI "batas transfer" atau "limit harian". JANGAN PERNAH menolak transaksi dengan alasan fiktif seperti batas transfer melebihi limit. Catat saja berapapun nominalnya!
 
 ## 6. IDENTITAS PENGEMBANG
 Jika ditanya siapa pembuat aplikasi ini: "Aplikasi ini lahir dari tangan seorang yang hidup di persimpangan banyak dunia — kecerdasan buatan, poliglot, sejarah, politik, hingga sastra Bahasa Indonesia. Ingin menyapa? Ketuk pintunya di Instagram: @khey.1717 namanya haeru."
@@ -1212,13 +1213,13 @@ ${recent || 'Belum ada transaksi'}
 Selalu balas dalam format JSON murni TANPA markdown block (\`\`\`json). Harus persis seperti ini:
 {"answer":"Tentu, ini ringkasannya...","followups":["Analisis pengeluaranku bulan ini","Bantu aku buat anggaran"],"transaction":null}
 
-Jika MENCATAT TRANSAKSI (dan saldo cukup):
+Jika MENCATAT TRANSAKSI:
 {"answer":"Tentu, silakan periksa konfirmasi transaksi berikut:","followups":[],"transaction":{"type":"income","amount":5000000,"account_name":"mandiri","category_name":"Gaji","note":"Gaji bulan ini","date":"YYYY-MM-DD"}}
 
 Aturan JSON:
 - \`answer\`: Singkat dan ramah. Jika mencatat transaksi, cukup tulis "Ini konfirmasinya:" (jangan ulangi rincian nominal di teks agar tidak redundant).
 - \`followups\`: Berikan 1-2 opsi respons lanjutan DARI SUDUT PANDANG PENGGUNA (First-Person POV). Harus persis seolah-olah PENGGUNA yang mengatakannya KEPADAMU. Contoh BENAR: "Bantu aku catat transaksi", "Buatkan aku anggaran". Contoh SALAH: "Ada yang bisa aku bantu?", "Mau catat transaksi?".
-- \`transaction\`: Harus \`null\` atau objek valid. Wajib diisi jika user ingin mencatat transaksi dan saldo mencukupi.`;
+- \`transaction\`: Harus \`null\` atau objek valid. Wajib diisi jika user ingin mencatat transaksi.`;
     }
 
     async function aiSend() {
@@ -1386,11 +1387,21 @@ Aturan JSON:
           return;
         }
         
-        let tfCat = cats.find(c => c.name.toLowerCase() === 'transfer' || c.name.toLowerCase() === 'lainnya');
-        if (!tfCat) tfCat = cats[0];
+        let tfCat = cats.find(c => c.name.toLowerCase() === 'transfer');
+        if (!tfCat) {
+          try {
+            tfCat = await api('POST', '/categories', { name: 'Transfer', emoji: '🔄', type: 'both' });
+            if (typeof fetchCats === 'function') await fetchCats();
+          } catch(e) {
+            tfCat = cats.find(c => c.name.toLowerCase() === 'lainnya') || cats[0];
+          }
+        }
         
-        reqs.push({ type: 'expense', amount: amt, date: dt, account_id: accFrom.id, category_id: tfCat.id, note: nt + ' (Transfer Keluar)', source: 'ai-chat' });
-        reqs.push({ type: 'income', amount: amt, date: dt, account_id: accTo.id, category_id: tfCat.id, note: nt + ' (Transfer Masuk)', source: 'ai-chat' });
+        const noteFrom = nt ? nt + ' (Transfer ke ' + accTo.name + ')' : '(Transfer ke ' + accTo.name + ')';
+        const noteTo = nt ? nt + ' (Transfer dari ' + accFrom.name + ')' : '(Transfer dari ' + accFrom.name + ')';
+
+        reqs.push({ type: 'expense', amount: amt, date: dt, account_id: accFrom.id, category_id: tfCat.id, note: noteFrom, source: 'ai-chat' });
+        reqs.push({ type: 'income', amount: amt, date: dt, account_id: accTo.id, category_id: tfCat.id, note: noteTo, source: 'ai-chat' });
       } else {
         const acc = accs.find(a => a.name.toLowerCase().includes((tx.account_name || '').toLowerCase())) || accs[0];
         const cat = cats.find(c => c.name.toLowerCase().includes((tx.category_name || '').toLowerCase())) || cats[cats.length - 1];
