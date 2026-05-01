@@ -1221,7 +1221,7 @@ ${recent || 'Belum ada transaksi'}
 ## 6. CATAT TAGIHAN (BILLS)
 Jika user meminta menambahkan tagihan atau daftar tagihan (misal daftar tagihan kartu kredit, listrik):
 - Kamu WAJIB menyertakan array JSON \`bills\` yang berisi objek-objek tagihan.
-- Properti tagihan: \`name\` (string, wajib), \`bill_type\` (string, misal: "Kartu Kredit", "Paylater", "Listrik", dll), \`amount\` (angka murni, opsional, isi 0 jika tidak ada), \`due_date\` (string YYYY-MM-DD, wajib jika ada tanggal jatuh tempo), \`status\` (string "unpaid" atau "paid").
+- Properti tagihan: \`name\` (string, wajib. PENTING: Jangan gabungkan nominal/harga ke dalam nama!), \`bill_type\` (string, misal: "Kartu Kredit", "Paylater", "Listrik", dll), \`amount\` (angka murni dari nominal/harga tagihan walau tanpa label "Rp" atau "Nominal", opsional, isi 0 jika tidak ada), \`due_date\` (string YYYY-MM-DD, wajib jika ada tanggal jatuh tempo), \`status\` (string "unpaid" atau "paid").
 - Jangan mengulangi rincian secara panjang lebar di teks \`answer\`.
 
 ## FORMAT RESPONS (WAJIB JSON)
