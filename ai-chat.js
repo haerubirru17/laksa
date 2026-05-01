@@ -1401,7 +1401,7 @@ async function aiConfirmTx(tx, bubbleId) {
   if (txType === 'transfer') {
     const accFrom = accs.find(a => a.name.toLowerCase().includes((tx.from_account_name || '').toLowerCase()));
     const accTo = accs.find(a => a.name.toLowerCase().includes((tx.to_account_name || '').toLowerCase()));
-    if (!accFrom || !accTo) { toast('Rekening asal atau tujuan tidak ditemukan.', 'err'); return; }
+    if (!accFrom) { toast('Rekening asal tidak ditemukan.', 'err'); return; }
     if (amt > (accFrom.balance || 0)) {
       if (bubble) {
         const btns = bubble.querySelector('.ai-tx-confirm-btns');
@@ -1421,11 +1421,14 @@ async function aiConfirmTx(tx, bubbleId) {
       }
     }
 
-    const noteFrom = nt ? nt + ' (Transfer ke ' + accTo.name + ')' : '(Transfer ke ' + accTo.name + ')';
-    const noteTo = nt ? nt + ' (Transfer dari ' + accFrom.name + ')' : '(Transfer dari ' + accFrom.name + ')';
-
+    const destName = accTo ? accTo.name : (tx.to_account_name || 'Lainnya');
+    const noteFrom = nt ? nt + ' (Transfer ke ' + destName + ')' : '(Transfer ke ' + destName + ')';
     reqs.push({ type: 'expense', amount: amt, date: dt, account_id: accFrom.id, category_id: tfCat.id, note: noteFrom, source: 'ai-chat' });
-    reqs.push({ type: 'income', amount: amt, date: dt, account_id: accTo.id, category_id: tfCat.id, note: noteTo, source: 'ai-chat' });
+    
+    if (accTo) {
+      const noteTo = nt ? nt + ' (Transfer dari ' + accFrom.name + ')' : '(Transfer dari ' + accFrom.name + ')';
+      reqs.push({ type: 'income', amount: amt, date: dt, account_id: accTo.id, category_id: tfCat.id, note: noteTo, source: 'ai-chat' });
+    }
   } else {
     const acc = accs.find(a => a.name.toLowerCase().includes((tx.account_name || '').toLowerCase())) || accs[0];
     const cat = cats.find(c => c.name.toLowerCase().includes((tx.category_name || '').toLowerCase())) || cats[cats.length - 1];
@@ -1566,13 +1569,13 @@ window.aiConfirmBills = async function(bills, bubbleId) {
 
     if (bubble) {
       const btns = bubble.querySelector('.ai-tx-confirm-btns');
-      if (btns) btns.innerHTML = \`<div class="ai-tx-confirm-done">✅ \${successCount} tagihan berhasil dicatat!</div>\`;
+      if (btns) btns.innerHTML = `<div class="ai-tx-confirm-done">✅ ${successCount} tagihan berhasil dicatat!</div>`;
     }
-    toast(\`\${successCount} tagihan dicatat!\`, 'ok');
+    toast(`${successCount} tagihan dicatat!`, 'ok');
   } catch(e) {
     if (bubble) {
       const btns = bubble.querySelector('.ai-tx-confirm-btns');
-      if (btns) btns.innerHTML = \`<div class="ai-tx-confirm-done" style="color:var(--expense)">❌ Gagal: \${esc(e.message)}</div>\`;
+      if (btns) btns.innerHTML = `<div class="ai-tx-confirm-done" style="color:var(--expense)">❌ Gagal: ${esc(e.message)}</div>`;
     }
     toast('Gagal simpan tagihan: ' + e.message, 'err');
   }
