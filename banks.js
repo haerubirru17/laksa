@@ -1,21 +1,21 @@
 const BANKS = {
   // ── Bank Pemerintah ──
   bri:       {color:'#00529c',c2:'#003d7a',domain:'www.bri.co.id'},
-  bni:       {color:'#f15a23',c2:'#c0451a',domain:'www.bni.co.id'},
+  bni:       {color:'#005e6a',c2:'#f15a23',domain:'www.bni.co.id'},
   bca:       {color:'#0060af',c2:'#004d8c',domain:'www.bca.co.id'},
-  mandiri:   {color:'#003a70',c2:'#002d58',domain:'www.bankmandiri.co.id'},
+  mandiri:   {color:'#003d77',c2:'#002d58',domain:'www.bankmandiri.co.id'},
   btn:       {color:'#0069ab',c2:'#005289',domain:'www.btn.co.id'},
-  bsi:       {color:'#4B8B3B',c2:'#3a6e2e',domain:'www.bankbsi.co.id'},
+  bsi:       {color:'#00A39D',c2:'#F8AD3C',domain:'www.bankbsi.co.id'},
 
   // ── Bank Syariah ──
   bcasyariah:{color:'#0060af',c2:'#004d8c',domain:'www.bcasyariah.co.id'},
   btnsyariah:{color:'#0069ac',c2:'#00528a',domain:'www.btn.co.id'},
   btpnsyariah:{color:'#E30613',c2:'#b80510',domain:'www.btpnsyariah.com'},
-  bukopinsyariah:{color:'#E30613',c2:'#b80510',domain:'www.syariahbukopin.co.id'},
+  bukopinsyariah:{color:'#f5c400',c2:'#c49d00',domain:'www.kbbanksyariah.co.id'},
   danamonsyariah:{color:'#046148',c2:'#034f39',domain:'www.danamon.co.id'},
   cimbniagasyariah:{color:'#C00000',c2:'#960000',domain:'www.cimbniaga.co.id'},
   megasyariah:{color:'#E31E24',c2:'#b5181d',domain:'www.bms.co.id'},
-  muamalat:  {color:'#6EB63B',c2:'#579030',domain:'www.bankmuamalat.co.id'},
+  muamalat:  {color:'#5b2d8e',c2:'#7DC242',domain:'www.bankmuamalat.co.id'},
   nanobanksyariah:{color:'#002657',c2:'#001e42',domain:'www.nanobank.co.id'},
   ntbsyariah:{color:'#006B3F',c2:'#00552f',domain:'www.bankntbsyariah.co.id'},
   panindubaisyariah:{color:'#005AB2',c2:'#00478c',domain:'www.banksyariah.co.id'},
@@ -23,11 +23,11 @@ const BANKS = {
   victoriasyariah:{color:'#003087',c2:'#00256b',domain:'www.bankvictoriasyariah.co.id'},
 
   // ── Bank Swasta Nasional ──
-  bukopin:   {color:'#E30613',c2:'#b80510',domain:'www.bukopin.co.id'},
-  danamon:   {color:'#EE3124',c2:'#c0271e',domain:'www.danamon.co.id'},
+  bukopin:   {color:'#f5c400',c2:'#c49d00',domain:'www.kbbank.id'},
+  danamon:   {color:'#046148',c2:'#034f39',domain:'www.danamon.co.id'},
   cimbniaga: {color:'#C00000',c2:'#960000',domain:'www.cimbniaga.co.id'},
   paninbank: {color:'#005AB2',c2:'#00478c',domain:'www.panin.co.id'},
-  permatabank:{color:'#AF1F23',c2:'#8c191d',domain:'www.permatabank.com'},
+  permatabank:{color:'#1565C0',c2:'#1044a0',domain:'www.permatabank.com'},
   maybank:   {color:'#FFCC00',c2:'#e6b800',domain:'www.maybank.co.id'},
   mega:      {color:'#E31E24',c2:'#b5181d',domain:'www.bankmega.com'},
   sinarmas:  {color:'#0070B8',c2:'#005a93',domain:'www.banksinarmas.com'},
