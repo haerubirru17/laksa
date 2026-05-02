@@ -4785,6 +4785,109 @@
       color: #fff !important
     }
   
+    /* Bills Hero Card */
+    .bills-hero {
+      background: var(--gs-1);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid var(--gs-border);
+      border-radius: 20px;
+      padding: 1.25rem 1.4rem 1rem;
+      margin-bottom: 18px;
+    }
+    .bills-hero-top {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 1rem;
+    }
+    .bills-hero-stat {
+      flex: 1;
+    }
+    .bills-hero-stat:last-child { text-align: right; }
+    .bills-hero-divider {
+      width: 1px;
+      height: 36px;
+      background: var(--gs-border);
+      margin: 0 1rem;
+    }
+    .bills-hero-label {
+      font-size: 0.7rem;
+      color: var(--ink3);
+      margin-bottom: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .bills-hero-value {
+      font-family: 'Inter', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--ink);
+      letter-spacing: -0.03em;
+    }
+    .bills-hero-value.bills-hero-paid { color: var(--income); }
+    .bills-hero-progress-wrap { margin-bottom: 0.6rem; }
+    .bills-hero-progress-bar {
+      height: 6px;
+      background: var(--gs-border);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+    .bills-hero-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #22c578, #16a34a);
+      border-radius: 99px;
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+    .bills-hero-progress-label {
+      font-size: 0.72rem;
+      color: var(--ink3);
+    }
+    .bills-hero-bottom {
+      margin-top: 0.7rem;
+      padding-top: 0.65rem;
+      border-top: 1px solid var(--gs-border);
+      font-size: 0.72rem;
+      color: var(--ink3);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .bills-hero-bottom strong { color: var(--ink); }
+
+    /* Swipe confirm modal overlay */
+    .swipe-confirm-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      backdrop-filter: blur(4px);
+      z-index: 3000;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: env(safe-area-inset-bottom, 0);
+      animation: fadeIn 0.18s ease;
+    }
+    .swipe-confirm-sheet {
+      background: var(--surface, #fff);
+      border-radius: 24px 24px 0 0;
+      padding: 1.5rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom, 0));
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 -8px 40px rgba(0,0,0,0.15);
+      animation: slideUp 0.25s cubic-bezier(.34,1.1,.64,1);
+    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .swipe-confirm-title { font-size: 0.8rem; color: var(--ink3); margin-bottom: 0.4rem; }
+    .swipe-confirm-name { font-size: 1.1rem; font-weight: 700; color: var(--ink); margin-bottom: 0.25rem; }
+    .swipe-confirm-amt { font-size: 1.5rem; font-weight: 800; color: var(--ink); letter-spacing: -0.03em; margin-bottom: 1.2rem; }
+    .swipe-confirm-btns { display: flex; gap: 0.6rem; }
+    .swipe-confirm-cancel { flex: 1; padding: 0.7rem; border-radius: 14px; border: 1.5px solid var(--gs-border); background: transparent; color: var(--ink); font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+    .swipe-confirm-ok { flex: 2; padding: 0.7rem; border-radius: 14px; border: none; background: linear-gradient(135deg, #22c578, #16a34a); color: #fff; font-family: inherit; font-size: 0.9rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(34,197,120,0.3); }
+
+
     .card-wrap { border-radius: 20px; position: relative; margin-bottom: 14px; }
     .action-bg { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(34,197,120,0.0) 0%, rgba(34,197,120,0.85) 100%); display: flex; align-items: center; justify-content: flex-end; padding-right: 28px; border-radius: 20px; opacity: 0; transition: opacity 0.1s; }
     .check-label { color: rgba(255,255,255,0.95); font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; opacity: 0; transition: opacity 0.1s; }
@@ -6814,8 +6917,33 @@
     }
 
 
+    function renderBillsHero(bills) {
+      const hero = el('billsHero');
+      if (!bills.length) { if (hero) hero.style.display = 'none'; return; }
+      if (hero) hero.style.display = 'block';
+      const activeBills = bills.filter(b => b.status !== 'paid');
+      const paidBills = bills.filter(b => b.status === 'paid');
+      const totalUnpaid = activeBills.reduce((s, b) => s + (b.amount || 0), 0);
+      const totalPaid = paidBills.reduce((s, b) => s + (b.amount || 0), 0);
+      const pct = bills.length > 0 ? Math.round((paidBills.length / bills.length) * 100) : 0;
+      // Biggest unpaid bill
+      let biggest = null;
+      activeBills.forEach(b => { if (b.amount > 0 && (!biggest || b.amount > biggest.amount)) biggest = b; });
+      if (el('heroUnpaidAmt')) el('heroUnpaidAmt').textContent = fCur(totalUnpaid);
+      if (el('heroPaidAmt')) el('heroPaidAmt').textContent = fCur(totalPaid);
+      if (el('heroProgressFill')) el('heroProgressFill').style.width = pct + '%';
+      if (el('heroProgressLabel')) el('heroProgressLabel').textContent = paidBills.length + ' dari ' + bills.length + ' tagihan lunas bulan ini';
+      const biggestEl = el('heroBiggest');
+      if (biggest && biggestEl) {
+        biggestEl.style.display = 'flex';
+        el('heroBiggestName').textContent = biggest.name;
+        el('heroBiggestAmt').textContent = fCur(biggest.amount);
+      } else if (biggestEl) biggestEl.style.display = 'none';
+    }
+
     function renderBills() {
       const bills = getBills(), grid = el('billGrid'), emp = el('billEmpty');
+      renderBillsHero(bills);
       if (!bills.length) { grid.innerHTML = ''; emp.style.display = 'flex'; return; }
       emp.style.display = 'none';
       const ORDER = { overdue: 0, 'due-soon': 1, upcoming: 2, paid: 3 };
@@ -6862,6 +6990,72 @@
       setTimeout(bindSwipeBills, 100);
     }
 
+    function showSwipeConfirm(bill, card) {
+      // Remove existing overlay if any
+      const old = document.getElementById('swipeConfirmOverlay');
+      if (old) old.remove();
+      const bg = card.parentElement ? card.parentElement.querySelector('.action-bg') : null;
+      const lbl = card.parentElement ? card.parentElement.querySelector('.check-label') : null;
+
+      const overlay = document.createElement('div');
+      overlay.className = 'swipe-confirm-overlay';
+      overlay.id = 'swipeConfirmOverlay';
+      overlay.innerHTML = `
+        <div class="swipe-confirm-sheet">
+          <div class="swipe-confirm-title">Konfirmasi Pelunasan</div>
+          <div class="swipe-confirm-name">${bill.name}</div>
+          <div class="swipe-confirm-amt">${bill.amount > 0 ? fCur(bill.amount) : 'Nominal tidak diset'}</div>
+          <div class="swipe-confirm-btns">
+            <button class="swipe-confirm-cancel" id="swipeConfirmCancel">Batal</button>
+            <button class="swipe-confirm-ok" id="swipeConfirmOk">✓ Ya, Sudah Lunas</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+
+      function closeOverlay() {
+        // Reset card position
+        card.style.transition = 'transform 0.3s cubic-bezier(.34,1.1,.64,1)';
+        card.style.transform = 'translateX(0)';
+        if (bg) { bg.style.transition = 'opacity 0.3s'; bg.style.opacity = 0; }
+        if (lbl) lbl.style.opacity = 0;
+        overlay.remove();
+      }
+
+      document.getElementById('swipeConfirmCancel').onclick = closeOverlay;
+      overlay.addEventListener('click', e => { if (e.target === overlay) closeOverlay(); });
+
+      document.getElementById('swipeConfirmOk').onclick = async () => {
+        overlay.remove();
+        card.style.transform = `translateX(${card.parentElement ? card.parentElement.offsetWidth : 400}px)`;
+        if (bg) bg.style.opacity = 1;
+        try {
+          await api('PATCH', `/bills/${bill.id}`, { status: 'paid', paid_date: new Date().toISOString() });
+          setTimeout(() => {
+            const w = card.parentElement;
+            if (w) {
+              w.style.transition = 'all 0.35s ease';
+              w.style.maxHeight = w.offsetHeight + 'px';
+              w.offsetHeight;
+              w.style.maxHeight = '0';
+              w.style.opacity = '0';
+              w.style.marginBottom = '0';
+            }
+          }, 200);
+          toast('Tagihan ditandai lunas ✓', 'ok');
+          await fetchBills();
+          renderBills();
+          renderDashBills();
+        } catch(err) {
+          toast('Gagal: ' + err.message, 'err');
+          card.style.transition = 'transform 0.3s';
+          card.style.transform = 'translateX(0)';
+          if (bg) bg.style.opacity = 0;
+          if (lbl) lbl.style.opacity = 0;
+        }
+      };
+    }
+
     function bindSwipeBills() {
       const cards = document.querySelectorAll('#billGrid .bill-card:not(.paid)');
       cards.forEach(card => {
@@ -6870,60 +7064,51 @@
         const wrap = card.parentElement;
         const bg = wrap ? wrap.querySelector('.action-bg') : null;
         const lbl = wrap ? wrap.querySelector('.check-label') : null;
-        let startX = 0, curX = 0, dragging = false;
+        let startX = 0, startY = 0, curX = 0, dragging = false, directionLocked = false, isHoriz = false;
         const threshold = 110;
+
         function onStart(e) {
           if (e.target.closest('button')) return;
           startX = e.touches ? e.touches[0].clientX : e.clientX;
+          startY = e.touches ? e.touches[0].clientY : e.clientY;
           dragging = true;
+          directionLocked = false;
+          isHoriz = false;
           card.style.transition = 'none';
           if (bg) bg.style.transition = 'none';
           card.style.cursor = 'grabbing';
         }
         function onMove(e) {
           if (!dragging) return;
-          curX = (e.touches ? e.touches[0].clientX : e.clientX) - startX;
-          if (curX < 0) curX = 0;
+          const cx = e.touches ? e.touches[0].clientX : e.clientX;
+          const cy = e.touches ? e.touches[0].clientY : e.clientY;
+          const dx = cx - startX;
+          const dy = cy - startY;
+          // Diagonal guard: lock direction after 10px movement
+          if (!directionLocked && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) {
+            directionLocked = true;
+            isHoriz = Math.abs(dx) > Math.abs(dy);
+          }
+          if (!isHoriz) return; // Vertical scroll - do nothing
+          curX = Math.max(0, dx);
           const pct = Math.min(curX / threshold, 1);
           card.style.transform = `translateX(${curX}px)`;
           if (bg) bg.style.opacity = pct;
           if (lbl) lbl.style.opacity = pct;
         }
-        async function onEnd() {
+        function onEnd() {
           if (!dragging) return;
           dragging = false;
           card.style.cursor = 'grab';
-          card.style.transition = 'transform 0.3s cubic-bezier(.34,1.1,.64,1)';
-          if (bg) bg.style.transition = 'opacity 0.3s';
+          if (!isHoriz) return; // Was a scroll, ignore
           if (curX >= threshold) {
-            card.style.transform = `translateX(${card.parentElement.offsetWidth}px)`;
-            if (bg) bg.style.opacity = 1;
-            if (lbl) lbl.style.opacity = 1;
+            // Show confirmation modal instead of immediately saving
             const id = card.getAttribute('data-id');
-            try {
-              await api('PATCH', `/bills/${id}`, { status: 'paid', paid_date: new Date().toISOString() });
-              setTimeout(() => {
-                const w = card.parentElement;
-                if (w) {
-                  w.style.transition = 'all 0.35s ease';
-                  w.style.maxHeight = w.offsetHeight + 'px';
-                  w.offsetHeight;
-                  w.style.maxHeight = '0';
-                  w.style.opacity = '0';
-                  w.style.marginBottom = '0';
-                }
-              }, 200);
-              toast('Tagihan ditandai lunas ✓', 'ok');
-              await fetchBills();
-              renderBills();
-              renderDashBills();
-            } catch(err) {
-              toast('Gagal: ' + err.message, 'err');
-              card.style.transform = 'translateX(0)';
-              if (bg) bg.style.opacity = 0;
-              if (lbl) lbl.style.opacity = 0;
-            }
+            const bill = getBills().find(b => b.id === id);
+            if (bill) showSwipeConfirm(bill, card);
           } else {
+            card.style.transition = 'transform 0.3s cubic-bezier(.34,1.1,.64,1)';
+            if (bg) bg.style.transition = 'opacity 0.3s';
             card.style.transform = 'translateX(0)';
             if (bg) bg.style.opacity = 0;
             if (lbl) lbl.style.opacity = 0;
