@@ -5844,6 +5844,30 @@
           </div>
         </div>
         <div id="keuPanelBills" style="display:none">
+          <!-- Bills Hero Card -->
+          <div class="bills-hero" id="billsHero" style="display:none">
+            <div class="bills-hero-top">
+              <div class="bills-hero-stat">
+                <div class="bills-hero-label">Belum lunas</div>
+                <div class="bills-hero-value" id="heroUnpaidAmt">Rp 0</div>
+              </div>
+              <div class="bills-hero-divider"></div>
+              <div class="bills-hero-stat">
+                <div class="bills-hero-label">Sudah lunas</div>
+                <div class="bills-hero-value bills-hero-paid" id="heroPaidAmt">Rp 0</div>
+              </div>
+            </div>
+            <div class="bills-hero-progress-wrap">
+              <div class="bills-hero-progress-bar">
+                <div class="bills-hero-progress-fill" id="heroProgressFill"></div>
+              </div>
+              <div class="bills-hero-progress-label" id="heroProgressLabel">0 dari 0 tagihan lunas</div>
+            </div>
+            <div class="bills-hero-bottom" id="heroBiggest" style="display:none">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Terbesar: <span id="heroBiggestName"></span> &mdash; <strong id="heroBiggestAmt"></strong>
+            </div>
+          </div>
           <div class="bill-grid" id="billGrid"></div>
           <div class="empty" id="billEmpty" style="display:none"><svg width="40" height="40" viewBox="0 0 24 24"
               fill="none" stroke="currentColor" stroke-width="1.5" opacity=".25">
