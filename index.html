@@ -51,27 +51,27 @@
       --modal-bg: rgba(255, 255, 255, 0.96);
       --sidebar: rgba(255, 255, 255, 0.75);
       --hero-grad: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
-      /* Glass surface variables */
-      --gs-1: rgba(255, 255, 255, .78);
+      /* Glass surface variables — frosted glass */
+      --gs-1: rgba(255, 255, 255, .45);
       /* card / widget */
-      --gs-2: rgba(255, 255, 255, .65);
+      --gs-2: rgba(255, 255, 255, .35);
       /* segmented, rres-hdr, sbox */
-      --gs-3: rgba(255, 255, 255, .58);
+      --gs-3: rgba(255, 255, 255, .30);
       /* tgl-grp, rtabs, fbar bg */
-      --gs-4: rgba(255, 255, 255, .72);
+      --gs-4: rgba(255, 255, 255, .50);
       /* finp, fsel, icat */
-      --gs-5: rgba(255, 255, 255, .52);
+      --gs-5: rgba(255, 255, 255, .28);
       /* empty, rawtext */
-      --gs-6: rgba(235, 242, 255, .88);
+      --gs-6: rgba(235, 242, 255, .55);
       /* bnav */
-      --gs-7: rgba(240, 246, 255, .95);
+      --gs-7: rgba(240, 246, 255, .70);
       /* tx-sheet */
-      --gs-8: rgba(235, 242, 255, .88);
+      --gs-8: rgba(235, 242, 255, .55);
       /* fab-opt */
-      --gs-9: rgba(225, 236, 255, .82);
+      --gs-9: rgba(225, 236, 255, .50);
       /* fbar */
-      --gs-border: rgba(255, 255, 255, .8);
-      --gs-border-hi: rgba(255, 255, 255, .95);
+      --gs-border: rgba(255, 255, 255, .55);
+      --gs-border-hi: rgba(255, 255, 255, .75);
       --mesh-a: radial-gradient(ellipse 80% 60% at 15% 5%, rgba(99, 179, 237, .4) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 85% 15%, rgba(167, 139, 250, .22) 0%, transparent 55%), radial-gradient(ellipse 70% 60% at 50% 90%, rgba(52, 211, 153, .18) 0%, transparent 60%), radial-gradient(ellipse 50% 40% at 5% 75%, rgba(251, 191, 36, .12) 0%, transparent 50%), linear-gradient(135deg, #dbeafe 0%, #ede9fe 45%, #d1fae5 100%);
       --mesh-b: radial-gradient(circle 350px at 10% -5%, rgba(37, 99, 235, .18) 0%, transparent 70%), radial-gradient(circle 300px at 90% 25%, rgba(139, 92, 246, .14) 0%, transparent 70%), radial-gradient(circle 280px at 30% 95%, rgba(16, 185, 129, .12) 0%, transparent 70%);
     }
@@ -4790,8 +4790,9 @@
     .bills-hero-main {
       background: var(--gs-1);
       backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
-      border: 1px solid var(--gs-border); border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.6); border-radius: 20px;
       padding: 1.25rem 1.4rem 1.1rem;
+      box-shadow: 0 8px 32px rgba(99,120,200,.10), inset 0 1px 0 rgba(255,255,255,.7);
     }
     .bills-hero-label-sm { font-size:0.68rem; font-weight:700; letter-spacing:.10em; text-transform:uppercase; color:var(--ink3); margin-bottom:4px; }
     .bills-hero-total { font-family:'Inter',sans-serif; font-size:2rem; font-weight:800; color:var(--ink); letter-spacing:-0.04em; line-height:1.1; }
@@ -4805,8 +4806,9 @@
     .bills-stat-card {
       background: var(--gs-1);
       backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--gs-border); border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.6); border-radius: 16px;
       padding: 14px 12px; text-align:center;
+      box-shadow: 0 4px 16px rgba(99,120,200,.08), inset 0 1px 0 rgba(255,255,255,.7);
     }
     .bills-stat-icon { margin-bottom:6px; display:flex; justify-content:center; }
     .bills-stat-val { font-family:'Inter',sans-serif; font-size:1.5rem; font-weight:800; line-height:1; }
@@ -4864,11 +4866,12 @@
     .glass-card {
       background: var(--gs-1);
       backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-      border: 1px solid var(--gs-border);
+      border: 1px solid rgba(255,255,255,.6);
       border-radius: 20px;
       padding: 20px 22px;
       position: relative; overflow: hidden;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 8px 32px rgba(99,120,200,.10), inset 0 1px 0 rgba(255,255,255,.8);
     }
     .glass-card::before {
       content: ''; position: absolute; inset: 0;
@@ -4885,8 +4888,9 @@
     .keu-summary-card {
       background: var(--gs-1);
       backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--gs-border); border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.6); border-radius: 16px;
       padding: 14px 16px;
+      box-shadow: 0 4px 16px rgba(99,120,200,.08), inset 0 1px 0 rgba(255,255,255,.7);
     }
     .keu-summary-label {
       font-size: 0.62rem; font-weight: 700; letter-spacing: .10em;
@@ -4904,9 +4908,10 @@
     .bcard-glass {
       background: var(--gs-1);
       backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-      border: 1px solid var(--gs-border); border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.6); border-radius: 20px;
       padding: 18px 20px; position: relative; overflow: hidden;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 8px 32px rgba(99,120,200,.10), inset 0 1px 0 rgba(255,255,255,.8);
     }
     .bcard-glass::after {
       content: ''; position: absolute;
@@ -4949,9 +4954,10 @@
     .gcard-glass {
       background: var(--gs-1);
       backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-      border: 1px solid var(--gs-border); border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.6); border-radius: 20px;
       padding: 20px 22px; position: relative; overflow: hidden;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 8px 32px rgba(99,120,200,.10), inset 0 1px 0 rgba(255,255,255,.8);
     }
     .gcard-glass:hover { transform: translateY(-2px); box-shadow: var(--shd); }
     .gcard-glass-hdr { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
