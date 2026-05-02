@@ -4859,6 +4859,146 @@
     }
     .bill-btn-del-new:hover { background:rgba(239,68,68,0.20); border-color:rgba(239,68,68,0.45); color:#fca5a5; transform:translateY(-1px); }
 
+
+    /* ── GLASS CARD UNIVERSAL ── */
+    .glass-card {
+      background: var(--gs-1);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--gs-border);
+      border-radius: 20px;
+      padding: 20px 22px;
+      position: relative; overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .glass-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0) 60%);
+      border-radius: 20px; pointer-events: none;
+    }
+    .glass-card:hover { transform: translateY(-2px); box-shadow: var(--shd); }
+
+    /* ── SUMMARY STRIP ── */
+    .keu-summary-strip {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: 10px; margin-bottom: 18px;
+    }
+    .keu-summary-card {
+      background: var(--gs-1);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--gs-border); border-radius: 16px;
+      padding: 14px 16px;
+    }
+    .keu-summary-label {
+      font-size: 0.62rem; font-weight: 700; letter-spacing: .10em;
+      text-transform: uppercase; color: var(--ink3); margin-bottom: 5px;
+    }
+    .keu-summary-value {
+      font-family: 'Inter', sans-serif; font-size: 1.05rem; font-weight: 800;
+      color: var(--ink); letter-spacing: -0.03em; line-height: 1.2;
+    }
+    .keu-summary-value.amber { color: var(--gold); }
+    .keu-summary-value.green { color: var(--income); }
+    .keu-summary-value.red   { color: var(--expense); }
+
+    /* ── BUDGET GLASS CARD ── */
+    .bcard-glass {
+      background: var(--gs-1);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--gs-border); border-radius: 20px;
+      padding: 18px 20px; position: relative; overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .bcard-glass::after {
+      content: ''; position: absolute;
+      left: 0; top: 16px; bottom: 16px;
+      width: 3px; border-radius: 0 3px 3px 0;
+      background: var(--bcard-accent, var(--gs-border));
+    }
+    .bcard-glass:hover { transform: translateY(-2px); box-shadow: var(--shd); }
+    .bcard-glass-hdr { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+    .bcard-glass-identity { display: flex; align-items: center; gap: 10px; }
+    .bcard-glass-icon {
+      width: 38px; height: 38px; border-radius: 11px; font-size: 17px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--gs-2); border: 1px solid var(--gs-border); flex-shrink: 0;
+    }
+    .bcard-glass-name { font-size: 0.88rem; font-weight: 700; color: var(--ink); }
+    .bcard-glass-sub  { font-size: 0.7rem; color: var(--ink3); margin-top: 1px; }
+    .bcard-glass-close {
+      width: 26px; height: 26px; border-radius: 50%;
+      border: 1px solid var(--gs-border); background: var(--gs-2);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--ink3); transition: all 0.18s ease; flex-shrink: 0;
+    }
+    .bcard-glass-close:hover { background: var(--expense-dim); color: var(--expense); border-color: rgba(239,68,68,.3); }
+    .bcard-glass-pct { font-family:'Inter',sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--ink); margin-bottom: 2px; }
+    .bcard-glass-pct.warn   { color: var(--gold); }
+    .bcard-glass-pct.danger { color: var(--expense); }
+    .bcard-glass-amounts { text-align: right; }
+    .bcard-glass-used  { font-size: 0.78rem; font-weight: 600; color: var(--ink2); }
+    .bcard-glass-limit { font-size: 0.68rem; color: var(--ink3); margin-top: 1px; }
+    .bcard-pct-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px; }
+    .bcard-glass-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--gs-border); padding-top: 10px; margin-top: 4px; }
+    .bcard-glass-sisa-lbl { font-size: 0.7rem; color: var(--ink3); }
+    .bcard-glass-sisa-val { font-size: 0.78rem; font-weight: 700; }
+    .bcard-glass-sisa-val.ok     { color: var(--income); }
+    .bcard-glass-sisa-val.warn   { color: var(--gold); }
+    .bcard-glass-sisa-val.danger { color: var(--expense); }
+
+    /* ── TARGET GLASS CARD ── */
+    .gcard-glass {
+      background: var(--gs-1);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--gs-border); border-radius: 20px;
+      padding: 20px 22px; position: relative; overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .gcard-glass:hover { transform: translateY(-2px); box-shadow: var(--shd); }
+    .gcard-glass-hdr { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+    .gcard-glass-identity { display: flex; align-items: center; gap: 10px; }
+    .gcard-glass-icon {
+      width: 38px; height: 38px; border-radius: 11px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--gs-2); border: 1px solid var(--gs-border); flex-shrink: 0;
+    }
+    .gcard-glass-name { font-size: 0.88rem; font-weight: 700; color: var(--ink); }
+    .gcard-glass-close {
+      width: 26px; height: 26px; border-radius: 50%;
+      border: 1px solid var(--gs-border); background: var(--gs-2);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--ink3); transition: all 0.18s ease; flex-shrink: 0;
+    }
+    .gcard-glass-close:hover { background: var(--expense-dim); color: var(--expense); border-color: rgba(239,68,68,.3); }
+    .gcard-glass-amounts { display: flex; align-items: baseline; gap: 7px; margin-bottom: 12px; }
+    .gcard-glass-cur { font-family:'Inter',sans-serif; font-size: 1.5rem; font-weight: 800; color: var(--ink); letter-spacing: -0.03em; }
+    .gcard-glass-divider { font-size: 0.85rem; color: var(--ink3); }
+    .gcard-glass-tgt { font-size: 0.85rem; color: var(--ink3); font-weight: 500; }
+    .gcard-glass-progress-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .gcard-glass-pct-badge {
+      font-size: 0.72rem; font-weight: 700; padding: 2px 9px;
+      border-radius: 99px; border: 1px solid rgba(245,158,11,.3);
+      background: rgba(245,158,11,.12); color: var(--gold);
+    }
+    .gcard-glass-pct-badge.green { background: rgba(34,197,120,.12); border-color: rgba(34,197,120,.3); color: var(--income); }
+    .gcard-glass-shortage { font-size: 0.7rem; color: var(--ink3); }
+    .gcard-glass-deadline { display: flex; align-items: center; gap: 5px; font-size: 0.72rem; color: var(--ink3); margin-bottom: 14px; margin-top: 4px; }
+    .gcard-glass-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--gs-border); padding-top: 12px; margin-top: 0; }
+    .gcard-glass-hint { font-size: 0.72rem; color: var(--ink3); line-height: 1.4; }
+    .gcard-glass-hint strong { color: var(--income); font-weight: 700; }
+    .btn-add-glass {
+      display: flex; align-items: center; gap: 5px;
+      padding: 8px 15px; border-radius: 99px;
+      background: rgba(37,99,235,0.10); border: 1px solid rgba(37,99,235,0.25);
+      color: #60a5fa; font-size: 0.75rem; font-weight: 600;
+      font-family: inherit; cursor: pointer; transition: all 0.18s ease;
+      white-space: nowrap; flex-shrink: 0;
+      backdrop-filter: blur(12px);
+    }
+    .btn-add-glass:hover { background: rgba(37,99,235,0.22); border-color: rgba(37,99,235,.45); color: #93c5fd; transform: translateY(-1px); }
+
+    /* Card grid layouts */
+    .keu-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+
     .card-wrap { border-radius: 20px; position: relative; margin-bottom: 14px; }
     .action-bg { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(34,197,120,0.0) 0%, rgba(34,197,120,0.85) 100%); display: flex; align-items: center; justify-content: flex-end; padding-right: 28px; border-radius: 20px; opacity: 0; transition: opacity 0.1s; }
     .check-label { color: rgba(255,255,255,0.95); font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; opacity: 0; transition: opacity 0.1s; }
@@ -5804,7 +5944,22 @@
           </div>
         </div>
         <div id="keuPanelGoals" style="display:none">
-          <div class="ggrid" id="goalsGrid" style="margin-top:.2rem"></div>
+          <!-- Goals Summary Strip -->
+          <div class="keu-summary-strip" id="goalsSummaryStrip" style="display:none">
+            <div class="keu-summary-card">
+              <div class="keu-summary-label">Total Target</div>
+              <div class="keu-summary-value" id="goalsTotalTarget">Rp 0</div>
+            </div>
+            <div class="keu-summary-card">
+              <div class="keu-summary-label">Terkumpul</div>
+              <div class="keu-summary-value green" id="goalsTotalCurrent">Rp 0</div>
+            </div>
+            <div class="keu-summary-card">
+              <div class="keu-summary-label">Target Terdekat</div>
+              <div class="keu-summary-value amber" id="goalsNearest">—</div>
+            </div>
+          </div>
+          <div class="keu-card-grid" id="goalsGrid"></div>
           <div class="empty" id="goalsEmpty" style="display:none"><svg width="40" height="40" viewBox="0 0 24 24"
               fill="none" stroke="currentColor" stroke-width="1.5" opacity=".25">
               <circle cx="12" cy="12" r="10" />
@@ -6769,29 +6924,61 @@
     // ── BUDGET (D1) ──
     function renderBudg() {
       const buds = getBud(), grid = el('budgGrid'), emp = el('budgEmpty');
-      if (!buds.length) { grid.innerHTML = ''; emp.style.display = 'flex'; return; }
+      const strip = el('budgSummaryStrip');
+      if (!buds.length) { grid.innerHTML = ''; if (strip) strip.style.display = 'none'; emp.style.display = 'flex'; return; }
       emp.style.display = 'none';
+      if (strip) strip.style.display = 'grid';
       const mTx = getTx().filter(t => mKey(t.date) === thisMon() && t.type === 'expense');
+      const totalLim   = buds.reduce((s, b) => s + (b.limit_amount || 0), 0);
+      const totalSpent = buds.reduce((s, b) => {
+        return s + mTx.filter(t => t.category_id === b.category_id).reduce((ss, t) => ss + t.amount, 0);
+      }, 0);
+      const totalSisa = Math.max(0, totalLim - totalSpent);
+      if (el('budgTotalLim'))   el('budgTotalLim').textContent   = fCur(totalLim);
+      if (el('budgTotalSpent')) el('budgTotalSpent').textContent = fCur(totalSpent);
+      if (el('budgTotalSisa'))  {
+        el('budgTotalSisa').textContent = fCur(totalSisa);
+        el('budgTotalSisa').className = 'keu-summary-value ' + (totalSisa <= 0 ? 'red' : totalSpent / totalLim >= 0.7 ? 'amber' : 'green');
+      }
       grid.innerHTML = buds.map(b => {
         const cat = catBy(b.category_id);
         const spent = mTx.filter(t => t.category_id === b.category_id).reduce((s, t) => s + t.amount, 0);
         const rawPct = b.limit_amount > 0 ? (spent / b.limit_amount) * 100 : 0;
         const isOver = rawPct > 100;
         const pct = Math.min(rawPct, 100);
-        const fc = isOver ? 'over' : pct >= 80 ? 'bad' : pct >= 50 ? 'warn' : 'ok';
-        const pc = isOver ? 'var(--expense)' : pct >= 80 ? 'var(--expense)' : pct >= 50 ? 'var(--gold)' : 'var(--income)';
-        const overBadge = isOver ? `<div style="display:flex;align-items:center;gap:.35rem;margin-top:.5rem;padding:.3rem .65rem;border-radius:8px;background:var(--expense-dim);border:1.5px solid rgba(239,68,68,.25)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--expense)" stroke-width="2.5" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span style="font-size:.72rem;font-weight:600;color:var(--expense)">Terlampaui! +${fCur(spent - b.limit_amount)}</span></div>` : '';
-        const sisaHtml = isOver
-          ? `<span style="color:var(--expense);font-weight:600">−${fCur(spent - b.limit_amount)} melebihi batas</span>`
-          : `Sisa: <span style="color:var(--t1)">${fCur(b.limit_amount - spent)}</span>`;
-        return `<div class="bcard">
-      <div class="bcard-hdr"><div><div class="bcard-cat" style="display:flex;align-items:center;gap:.3rem"><span style="display:flex;align-items:center;opacity:.8">${getCatIcon(b.category_id)}</span>${esc(cat.name)}</div></div><button class="abtn del" onclick="delBud('${b.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-      <div class="bcard-pct" style="color:${pc}">${isOver ? rawPct.toFixed(0) + '%' : pct.toFixed(0) + '%'}</div>
-      <div class="bcard-amts"><span class="bcard-spent">${fCur(spent)} terpakai</span><span class="bcard-lim">dari ${fCur(b.limit_amount)}</span></div>
-      <div class="ptrack"><div class="pfill ${fc}" style="width:${pct}%"></div></div>
-      <div style="font-size:.73rem;color:var(--t3);margin-top:.5rem">${sisaHtml}</div>
-      ${overBadge}
-    </div>`;
+        const level = isOver ? 'danger' : pct >= 80 ? 'danger' : pct >= 50 ? 'warn' : 'ok';
+        const sisa = b.limit_amount - spent;
+        const accentMap = { 'ok': '#22c578', 'warn': '#f59e0b', 'danger': '#ef4444' };
+        const accent = accentMap[level];
+        const catName = esc(cat?.name || 'Kategori');
+        const catIcon = getCatIcon(b.category_id);
+        const pctDisplay = rawPct.toFixed(0) + '%';
+        const sisaVal = isOver
+          ? `<span class="bcard-glass-sisa-val danger">−${fCur(Math.abs(sisa))} lebih</span>`
+          : `<span class="bcard-glass-sisa-val ${level}">${fCur(sisa)}</span>`;
+        return `<div class="bcard-glass" style="--bcard-accent:${accent}">
+          <div class="bcard-glass-hdr">
+            <div class="bcard-glass-identity">
+              <div class="bcard-glass-icon">${catIcon}</div>
+              <div><div class="bcard-glass-name">${catName}</div></div>
+            </div>
+            <button class="bcard-glass-close" onclick="delBud('${b.id}')" title="Hapus">
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+          <div class="bcard-pct-row">
+            <span class="bcard-glass-pct ${level}">${pctDisplay}</span>
+            <div class="bcard-glass-amounts">
+              <div class="bcard-glass-used">${fCur(spent)} terpakai</div>
+              <div class="bcard-glass-limit">dari ${fCur(b.limit_amount)}</div>
+            </div>
+          </div>
+          <div class="ptrack"><div class="pfill ${level === 'ok' ? 'ok' : level === 'warn' ? 'warn' : 'bad'}" style="width:${pct}%"></div></div>
+          <div class="bcard-glass-footer">
+            <span class="bcard-glass-sisa-lbl">Sisa anggaran</span>
+            ${sisaVal}
+          </div>
+        </div>`;
       }).join('');
     }
     async function addBud(d) {
@@ -6815,49 +7002,74 @@
     // ── GOALS ──
     function renderGoals() {
       const goals = getGoals(), grid = el('goalsGrid'), emp = el('goalsEmpty');
-      if (!goals.length) { grid.innerHTML = ''; emp.style.display = 'flex'; return; }
+      const strip = el('goalsSummaryStrip');
+      if (!goals.length) { grid.innerHTML = ''; if (strip) strip.style.display = 'none'; emp.style.display = 'flex'; return; }
       emp.style.display = 'none';
+      if (strip) strip.style.display = 'grid';
+      const totalTarget  = goals.reduce((s, g) => s + (g.target  || 0), 0);
+      const totalCurrent = goals.reduce((s, g) => s + (g.current || 0), 0);
+      const incomplete = goals.filter(g => g.deadline && g.current < g.target);
+      let nearestLabel = '—';
+      if (incomplete.length) {
+        incomplete.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+        const diff = Math.ceil((new Date(incomplete[0].deadline) - new Date()) / 86400000);
+        nearestLabel = diff > 0 ? diff + ' hari' : diff === 0 ? 'Hari ini!' : 'Lewat';
+      }
+      if (el('goalsTotalTarget'))  el('goalsTotalTarget').textContent  = fCur(totalTarget);
+      if (el('goalsTotalCurrent')) el('goalsTotalCurrent').textContent = fCur(totalCurrent);
+      if (el('goalsNearest'))      el('goalsNearest').textContent      = nearestLabel;
       grid.innerHTML = goals.map(g => {
         const rawPct = g.target > 0 ? (g.current / g.target) * 100 : 0;
         const isAchieved = rawPct >= 100;
         const pct = Math.min(rawPct, 100);
-        // Dynamic color: red=0-30, amber=31-60, blue=61-90, green=91+
-        const fc = isAchieved ? 'ok' : pct >= 61 ? 'ok' : pct >= 31 ? 'warn' : 'bad';
-        const pctColor = isAchieved ? 'var(--income)' : pct >= 61 ? 'var(--accent)' : pct >= 31 ? 'var(--gold)' : 'var(--expense)';
-        let dl = '';
+        const level = isAchieved ? 'ok' : pct >= 61 ? 'ok' : pct >= 31 ? 'warn' : 'bad';
+        const kurang = g.target - g.current;
+        const months = g.deadline ? Math.max(1, Math.ceil((new Date(g.deadline) - new Date()) / (30 * 86400000))) : null;
+        const savingsPerMonth = months && kurang > 0 ? Math.ceil(kurang / months) : null;
+        let dlHtml = '';
         if (g.deadline) {
           const diff = Math.ceil((new Date(g.deadline) - new Date()) / 86400000);
-          dl = `<div class="gcard-dl" style="display:flex;align-items:center;gap:.3rem"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> ${diff > 0 ? diff + ' hari lagi' : diff === 0 ? 'Hari ini!' : 'Sudah lewat'} — ${fDate(g.deadline)}</div>`;
+          dlHtml = `<div class="gcard-glass-deadline"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> ${diff > 0 ? diff + ' hari lagi' : diff === 0 ? 'Hari ini!' : 'Sudah lewat'} — ${fDate(g.deadline)}</div>`;
         }
         const gj = JSON.stringify(g).replace(/"/g, '&quot;');
         const iconSvg = getGoalIconSvg(g.icon || 'target', 18);
-        const achievedBadge = isAchieved ? `<div style="display:flex;align-items:center;justify-content:center;gap:.4rem;padding:.35rem;border-radius:9px;background:var(--income-dim);border:1.5px solid rgba(16,185,129,.3);margin-bottom:.6rem"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--income)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4a2 2 0 01-2-2V5a2 2 0 012-2h2"/><path d="M18 9h2a2 2 0 002-2V5a2 2 0 00-2-2h-2"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 006 6 6 6 0 006-6V2z"/></svg><span style="font-size:.76rem;font-weight:700;color:var(--income)">Target Tercapai!</span></div>` : '';
-        const kurang = g.target - g.current;
-        return `<div class="gcard" style="position:relative">
-      <button onclick="delGoal('${g.id}')" title="Hapus target" style="position:absolute;top:.7rem;right:.7rem;width:24px;height:24px;border-radius:50%;border:1.5px solid rgba(230,60,30,.2);background:rgba(230,60,30,.07);color:var(--expense);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0;z-index:1" onmouseover="this.style.background='rgba(230,60,30,.15)';this.style.borderColor='rgba(230,60,30,.4)'" onmouseout="this.style.background='rgba(230,60,30,.07)';this.style.borderColor='rgba(230,60,30,.2)'">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-      <div class="gcard-hdr" style="padding-right:1.8rem">
-        <div style="display:flex;align-items:center;gap:.55rem">
-          <div class="gcard-ico">${iconSvg}</div>
-          <span class="gcard-name">${esc(g.name)}</span>
-        </div>
-      </div>
-      ${achievedBadge}
-      <div class="gcard-amts"><span class="gcard-cur" style="color:${pctColor}">${fCur(g.current)}</span><span class="gcard-tgt">/ ${fCur(g.target)}</span></div>
-      <div class="ptrack" style="margin:.6rem 0 .3rem"><div class="pfill ${fc}" style="width:${pct}%"></div></div>
-      <div style="display:flex;justify-content:space-between;font-size:.72rem;margin-bottom:.75rem">
-        <span style="font-weight:700;color:${pctColor}">${isAchieved ? '100% ✓' : rawPct.toFixed(0) + '%'}</span>
-        <span style="color:var(--t3)">${!isAchieved && kurang > 0 ? 'Kurang ' + fCur(kurang) : isAchieved && g.current > g.target ? '+' + fCur(g.current - g.target) + ' lebih' : ''}</span>
-      </div>
-      ${dl}
-      <button style="width:100%;padding:.55rem;border-radius:10px;border:none;background:linear-gradient(135deg,#2563eb,#0ea5e9);color:#fff;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem;transition:all .18s;box-shadow:0 4px 14px rgba(37,99,235,.3)" onmouseover="this.style.boxShadow='0 6px 20px rgba(37,99,235,.45)';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='0 4px 14px rgba(37,99,235,.3)';this.style.transform=''" onclick='openModal("addToGoal",${gj})'>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Tambah Tabungan
-      </button>
-    </div>`;
+        const pctBadgeClass = isAchieved ? 'green' : '';
+        const pctLabel = isAchieved ? '100% ✓' : rawPct.toFixed(0) + '%';
+        const shortageText = !isAchieved && kurang > 0 ? 'Kurang ' + fCur(kurang) : isAchieved ? 'Tercapai! 🎉' : '';
+        const hintHtml = savingsPerMonth
+          ? `<div class="gcard-glass-hint">Nabung <strong>${fCur(savingsPerMonth)}/bln</strong> untuk mencapai target</div>`
+          : `<div class="gcard-glass-hint" style="color:var(--income);font-weight:600">Target tercapai! 🎉</div>`;
+        return `<div class="gcard-glass">
+          <div class="gcard-glass-hdr">
+            <div class="gcard-glass-identity">
+              <div class="gcard-glass-icon">${iconSvg}</div>
+              <div><div class="gcard-glass-name">${esc(g.name)}</div></div>
+            </div>
+            <button class="gcard-glass-close" onclick="delGoal('${g.id}')" title="Hapus">
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+          <div class="gcard-glass-amounts">
+            <span class="gcard-glass-cur">${fCur(g.current)}</span>
+            <span class="gcard-glass-divider">/</span>
+            <span class="gcard-glass-tgt">${fCur(g.target)}</span>
+          </div>
+          <div class="gcard-glass-progress-meta">
+            <span class="gcard-glass-pct-badge ${pctBadgeClass}">${pctLabel}</span>
+            <span class="gcard-glass-shortage">${shortageText}</span>
+          </div>
+          <div class="ptrack" style="margin-bottom:6px"><div class="pfill ${level}" style="width:${pct}%"></div></div>
+          ${dlHtml}
+          <div class="gcard-glass-footer">
+            ${hintHtml}
+            <button class="btn-add-glass" onclick='openModal("addToGoal",${gj})'>
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg> Tabung
+            </button>
+          </div>
+        </div>`;
       }).join('');
     }
-    async function addGoal(d) {
+        async function addGoal(d) {
       try {
         await api('POST', '/goals', { name: d.name, target: d.target, current: 0, deadline: d.deadline || null, icon: d.icon || 'target' });
         await fetchGoals();
