@@ -1117,6 +1117,7 @@ function aiGetContext() {
   const buds = getBud();
   const goals = getGoals();
   const cats = getCats();
+  const bills = typeof getBills === 'function' ? getBills() : [];
   const now = thisMon();
   const mTx = txs.filter(t => mKey(t.date) === now);
   const inc = mTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
@@ -1153,12 +1154,17 @@ function aiGetContext() {
     return `${c.name}: terpakai ${fCur(spent)} dari batas ${fCur(b.limit)} (${pct}%)${pct >= 100 ? ' ⚠️ TERLAMPAUI' : ''}`;
   }).join('\n') || 'Tidak ada anggaran aktif';
 
-  // Goals
   const goalStr = goals.map(g => {
     const pct = g.target > 0 ? Math.round((g.current / g.target) * 100) : 0;
     const sisa = g.target - g.current;
     return `${g.name}: terkumpul ${fCur(g.current)} dari target ${fCur(g.target)} (${pct}%)${sisa > 0 ? ', masih kurang ' + fCur(sisa) : '✓ TERCAPAI'}${g.deadline ? ', deadline ' + fDate(g.deadline) : ''}`;
   }).join('\n') || 'Tidak ada target tabungan';
+
+  // Bills status
+  const billsStr = bills.map(b => {
+    const due = b.due_type === 'once' && b.due_date ? fDate(b.due_date) : `Tgl ${b.due_day || 1} tiap bulan`;
+    return `${b.name} (${b.bill_type}): ${b.amount > 0 ? fCur(b.amount) : 'Nominal belum diset'} — ${b.status === 'paid' ? 'Lunas' : 'Belum Lunas'} (Jatuh tempo: ${due})`;
+  }).join('\n') || 'Tidak ada tagihan tercatat';
 
   const PAGE_CTX = {
     dashboard: 'User di DASHBOARD — fokus ringkasan keuangan, net worth, pemasukan vs pengeluaran bulan ini, insight umum.',
@@ -1215,13 +1221,15 @@ Anggaran:
 ${budStr}
 Target:
 ${goalStr}
+Tagihan:
+${billsStr}
 10 Transaksi Terakhir:
 ${recent || 'Belum ada transaksi'}
 
 ## 6. CATAT TAGIHAN (BILLS)
 Jika user meminta menambahkan tagihan atau daftar tagihan (misal daftar tagihan kartu kredit, listrik):
 - Kamu WAJIB menyertakan array JSON \`bills\` yang berisi objek-objek tagihan.
-- Properti tagihan: \`name\` (string, wajib. PENTING: Jangan gabungkan nominal/harga ke dalam nama!), \`bill_type\` (string, misal: "Kartu Kredit", "Paylater", "Listrik", dll), \`amount\` (angka murni dari nominal/harga tagihan walau tanpa label "Rp" atau "Nominal", opsional, isi 0 jika tidak ada), \`due_date\` (string YYYY-MM-DD, wajib jika ada tanggal jatuh tempo), \`status\` (string "unpaid" atau "paid").
+- Properti tagihan: \`name\` (string, wajib. PENTING: Ekstrak HANYA nama layanan/bank. Jangan gabungkan nominal/harga ke dalam nama!), \`bill_type\` (string, WAJIB salah satu ID ini: "cc" untuk kartu kredit, "paylater" untuk paylater, "cicilan", "langganan", atau "lainnya"), \`amount\` (angka murni dari nominal/harga tagihan walau tanpa label "Rp", opsional, isi 0 jika tidak ada), \`due_date\` (string YYYY-MM-DD, pastikan parse tanggal jatuh tempo dengan akurat, misal "10 mei 2026" -> "2026-05-10"), \`status\` (string "unpaid" atau "paid").
 - Jangan mengulangi rincian secara panjang lebar di teks \`answer\`.
 
 ## FORMAT RESPONS (WAJIB JSON)
@@ -1232,7 +1240,7 @@ Jika MENCATAT TRANSAKSI:
 {"answer":"Tentu, silakan periksa konfirmasi transaksi berikut:","followups":[],"transaction":{"type":"income","amount":5000000,"account_name":"mandiri","category_name":"Gaji","note":"Gaji bulan ini","date":"YYYY-MM-DD"},"bills":null}
 
 Jika MENCATAT TAGIHAN:
-{"answer":"Daftar tagihan siap dicatat:","followups":[],"transaction":null,"bills":[{"name":"Kartu Kredit MNC","bill_type":"Kartu Kredit","amount":0,"due_date":"2026-05-03","status":"unpaid"}]}
+{"answer":"Daftar tagihan siap dicatat:","followups":[],"transaction":null,"bills":[{"name":"CIMB Niaga","bill_type":"cc","amount":50000,"due_date":"2026-05-10","status":"unpaid"}]}
 
 Aturan JSON:
 - \`answer\`: Singkat dan ramah. Jika mencatat transaksi atau tagihan, jangan ulangi rincian di teks agar tidak redundant.
@@ -1517,7 +1525,7 @@ window.aiAppendBillsConfirm = function(bills) {
         ${b.amount ? `<div style="font-weight:600; font-size:0.9rem; color:var(--ink);">${fCur(b.amount)}</div>` : ''}
       </div>
       <div style="display:flex; justify-content:space-between; margin-top:4px; font-size:0.8rem; color:var(--ink2);">
-        <span>${esc(b.bill_type || 'Lainnya')}</span>
+        <span>${esc(b.bill_type === 'cc' ? 'Kartu Kredit' : b.bill_type === 'paylater' ? 'Paylater' : b.bill_type === 'cicilan' ? 'Cicilan' : b.bill_type === 'langganan' ? 'Langganan' : b.bill_type === 'lainnya' ? 'Lainnya' : (b.bill_type || 'Lainnya'))}</span>
         <span style="color:${b.status === 'paid' ? 'var(--income)' : 'var(--expense)'}">${b.status === 'paid' ? 'Lunas' : 'Belum Lunas'}</span>
       </div>
       ${b.due_date ? `<div style="font-size:0.75rem; color:var(--ink3); margin-top:2px;">Jatuh tempo: ${b.due_date}</div>` : ''}
@@ -1555,9 +1563,18 @@ window.aiConfirmBills = async function(bills, bubbleId) {
   let successCount = 0;
   try {
     for (const b of bills) {
+      // Fallback mapping if AI outputs text instead of ID
+      let mappedType = (b.bill_type || 'lainnya').toLowerCase();
+      if (mappedType.includes('kartu kredit')) mappedType = 'cc';
+      else if (mappedType.includes('kredit')) mappedType = 'cc';
+      else if (mappedType.includes('paylater')) mappedType = 'paylater';
+      else if (mappedType.includes('cicilan')) mappedType = 'cicilan';
+      else if (mappedType.includes('langganan')) mappedType = 'langganan';
+      else if (!['cc','paylater','cicilan','langganan','lainnya'].includes(mappedType)) mappedType = 'lainnya';
+
       await api('POST', '/bills', {
         name: b.name,
-        bill_type: b.bill_type || 'lainnya',
+        bill_type: mappedType,
         amount: Number(b.amount) || 0,
         due_type: b.due_date ? 'once' : 'monthly',
         due_date: b.due_date || null,
