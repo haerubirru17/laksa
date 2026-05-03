@@ -5982,6 +5982,10 @@
               <div class="bills-hero-label-sm">Total Tagihan Bulan Ini</div>
               <div class="bills-hero-total" id="heroTotalAmt">Rp 0</div>
               <div class="bills-hero-sub" id="heroSubText">0 tagihan aktif</div>
+              <div style="margin-top:8px; font-size:0.85rem; font-weight:500; color:var(--ink2); display:flex; align-items:center; gap:6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--income)" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+                Total Sudah Dibayar: <strong id="heroTotalPaid" style="color:var(--income)">Rp 0</strong>
+              </div>
               <div class="bills-hero-segbar" id="heroSegBar"></div>
               <div class="bills-hero-legend">
                 <span class="bhl-dot" style="background:#ef4444"></span><span class="bhl-txt">Kritis</span>
@@ -7143,12 +7147,16 @@
       if (hero) hero.style.display = 'block';
 
       const activeBills = bills.filter(b => b.status !== 'paid');
+      const paidBills   = bills.filter(b => b.status === 'paid');
       const total = activeBills.reduce((s, b) => s + (b.amount || 0), 0);
+      const paidTotal = paidBills.reduce((s, b) => s + (b.amount || 0), 0);
+
       const criticalBills = activeBills.filter(b => { const st = billDueStatus(b); return st.cls === 'overdue'; });
       const warnBills    = activeBills.filter(b => { const st = billDueStatus(b); return st.cls === 'due-soon'; });
       const safeBills    = activeBills.filter(b => { const st = billDueStatus(b); return st.cls === 'upcoming'; });
 
       if (el('heroTotalAmt')) el('heroTotalAmt').textContent = fCur(total);
+      if (el('heroTotalPaid')) el('heroTotalPaid').textContent = fCur(paidTotal);
       if (el('heroSubText')) el('heroSubText').textContent = activeBills.length + ' tagihan aktif · ' + new Date().toLocaleDateString('id-ID', {month:'long', year:'numeric'});
       if (el('heroStatCritical')) el('heroStatCritical').textContent = criticalBills.length;
       if (el('heroStatWarn')) el('heroStatWarn').textContent = warnBills.length;
