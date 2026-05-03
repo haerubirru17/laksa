@@ -7837,7 +7837,7 @@
       <div class="bill-type-opts">${typeChips}</div>
     </div>
     <div class="fg"><label class="flbl">Nominal</label>
-      <input type="text" class="finp" id="billAmt" placeholder="0 (kosongkan jika belum tahu)" value="${bill?.amount > 0 ? fmtAmt(bill.amount) : ''}"/>
+      <input type="text" class="finp" id="billAmt" placeholder="0 (kosongkan jika belum tahu)" value="${bill?.amount > 0 ? bill.amount : ''}"/>
     </div>
     <div class="fg"><label class="flbl">Pengulangan</label>
       <div style="display:flex;gap:.5rem">
@@ -8277,7 +8277,9 @@
       // Change type to text for display, but keep a hidden numeric value
       inp.type = 'text';
       inp.inputMode = 'numeric';
-      inp.setAttribute('data-raw', '');
+      const initialRaw = inp.value ? inp.value.replace(/\./g, '').replace(/[^0-9]/g, '') : '';
+      inp.setAttribute('data-raw', initialRaw);
+      if (initialRaw) inp.value = parseInt(initialRaw, 10).toLocaleString('id-ID');
       function fmt(e) {
         let raw = inp.value.replace(/\./g, '').replace(/[^0-9]/g, '');
         inp.setAttribute('data-raw', raw);
