@@ -1114,6 +1114,12 @@ function aiGetContext() {
   const s = { ..._set, name: _prof?.name || _set.name || 'Pengguna' };
   const txs = getTx();
   const accs = getAccs();
+  
+  // Separate banks and ewallets for context
+  const bAccs = accs.filter(a => !(/ovo|gopay|dana|linkaja|shopeepay|spay|wallet/i.test(a.name) || (typeof detBank === 'function' && detBank(a.name) && detBank(a.name).isWallet)));
+  const eAccs = accs.filter(a => (/ovo|gopay|dana|linkaja|shopeepay|spay|wallet/i.test(a.name) || (typeof detBank === 'function' && detBank(a.name) && detBank(a.name).isWallet)));
+  const bStr = bAccs.length > 0 ? bAccs.map(a => `${a.name} (Saldo: ${a.balance})`).join(', ') : 'Tidak ada';
+  const eStr = eAccs.length > 0 ? eAccs.map(a => `${a.name} (Saldo: ${a.balance})`).join(', ') : 'Tidak ada';
   const buds = getBud();
   const goals = getGoals();
   const cats = getCats();
@@ -1216,7 +1222,8 @@ Total Kekayaan Bersih: ${fCur(totalBal)}
 Bulan ini (${now}): Pemasukan ${fCur(inc)} | Pengeluaran ${fCur(exp)} | Selisih ${fCur(inc - exp)}
 3 Bulan terakhir: ${monthStats}
 Pengeluaran per kategori bulan ini: ${catExpStr || 'Belum ada'}
-Rekening: ${accs.map(a => `${a.name} (Saldo: ${a.balance})`).join(' | ')}
+Rekening Bank: ${bStr}
+E-Wallet: ${eStr}
 Anggaran:
 ${budStr}
 Target:
