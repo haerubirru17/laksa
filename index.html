@@ -6709,13 +6709,14 @@
           const ewBlend = isDark ? 'screen' : 'multiply';
           
           const init = (acc.name.replace(/[^a-zA-Z0-9]/g,'').slice(0,3)||'?').toUpperCase();
-          // Transparent clip container — zoom 150% utk potong white padding JPG, overflow:hidden crop sisanya
+          // object-fit:contain + mix-blend-mode: konsisten untuk semua rasio gambar
+          // multiply (light): bg putih/terang jadi transparan
+          // screen (dark):   bg gelap jadi transparan, logo putih tetap terlihat
           const logoEl = ewImg
-            ? `<div style="width:88px;height:40px;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
-                 <img src="${ewImg}" alt="${esc(acc.name)}"
-                   style="width:150%;height:150%;object-fit:contain;mix-blend-mode:${ewBlend};flex-shrink:0;"
-                   onerror="this.parentElement.outerHTML='<span style=\\'font-size:0.8rem;font-weight:800;color:rgba(255,255,255,0.9);letter-spacing:.06em\\'>${init}</span>'">
-               </div>`
+            ? `<img src="${ewImg}" alt="${esc(acc.name)}"
+                 style="max-height:42px;max-width:96px;object-fit:contain;display:block;mix-blend-mode:${ewBlend};"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
+               <span style="display:none;font-size:0.8rem;font-weight:800;color:rgba(255,255,255,0.9);letter-spacing:.06em">${init}</span>`
             : `<span style="font-size:0.8rem;font-weight:800;color:rgba(255,255,255,0.9);letter-spacing:.06em">${init}</span>`;
           
           eHtml += `<div class="ecard ${cCls}" onclick="openAccDetail('${acc.id}')">
