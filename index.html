@@ -6703,20 +6703,18 @@
           else if (nm.includes('shopee') || nm.includes('spay')){ cCls = 'ec-spay';   ewImg = null; }
           
           const init = (acc.name.replace(/[^a-zA-Z0-9]/g,'').slice(0,3)||'?').toUpperCase();
-          // Logo dalam pill putih frosted — kontras di atas background kartu berwarna apapun
-          const logoBox = ewImg
-            ? `<div style="background:rgba(255,255,255,0.92);border-radius:10px;padding:5px 10px;display:inline-flex;align-items:center;justify-content:center;max-height:44px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">
-                 <img src="${ewImg}" alt="${esc(acc.name)}" style="height:30px;max-width:80px;object-fit:contain;display:block;border-radius:4px"
-                   onerror="this.parentElement.innerHTML='<span style=\\'font-size:0.72rem;font-weight:800;color:#333;letter-spacing:.05em\\'>${init}</span>'">
-               </div>`
-            : `<div style="background:rgba(255,255,255,0.2);border-radius:10px;padding:5px 12px;display:inline-flex;align-items:center">
-                 <span style="font-size:0.8rem;font-weight:800;color:white;letter-spacing:.06em">${init}</span>
-               </div>`;
+          // Logo langsung di atas kartu — mix-blend-mode:multiply membuat bg putih transparan
+          const logoEl = ewImg
+            ? `<img src="${ewImg}" alt="${esc(acc.name)}"
+                 style="height:44px;max-width:100px;object-fit:contain;display:block;mix-blend-mode:multiply;"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+               <span style="display:none;font-size:0.8rem;font-weight:800;color:rgba(255,255,255,0.9);letter-spacing:.06em">${init}</span>`
+            : `<span style="font-size:0.8rem;font-weight:800;color:rgba(255,255,255,0.9);letter-spacing:.06em">${init}</span>`;
           
           eHtml += `<div class="ecard ${cCls}" onclick="openAccDetail('${acc.id}')">
             <div class="blob b1"></div><div class="blob b2"></div>
             <div class="ecard-top">
-              <div style="display:flex;align-items:center;justify-content:flex-end">${logoBox}</div>
+              <div style="display:flex;align-items:center;justify-content:flex-end">${logoEl}</div>
             </div>
             <div class="ecard-bottom">
               <div class="ecard-lbl">${esc(acc.name)}</div>
@@ -8469,12 +8467,30 @@
       const monIn = monTx.filter(t => (t.type === 'income' && t.account_id === accSheetId) || (t.type === 'transfer' && t.to_acc_id === accSheetId)).reduce((s, t) => s + t.amount, 0);
       const monOut = monTx.filter(t => (t.type === 'expense' && t.account_id === accSheetId) || (t.type === 'transfer' && t.account_id === accSheetId && t.to_acc_id !== accSheetId)).reduce((s, t) => s + t.amount, 0);
       const monOpts = months.length ? months.map(m => `<option value="${m}"${m === accSheetMon ? ' selected' : ''}>${m}</option>`).join('') : `<option value="${thisMon()}">${thisMon()}</option>`;
-      const logoHtml = getLogoHtml(acc.name, b, '', 'acc-sheet-ava-fb', 'width:100%;height:100%;object-fit:cover;border-radius:14px;', true);
+      // Untuk e-wallet: gunakan gambar lokal + favicon Google sebagai fallback
+      const isEwalletAcc = b && b.isWallet || /ovo|gopay|dana|linkaja|shopeepay|spay|wallet/i.test(acc.name);
+      const nm2 = acc.name.toLowerCase();
+      let ewLocalImg = null;
+      if (nm2.includes('gopay'))  ewLocalImg = 'ewallet/gopay-light.jpg';
+      else if (nm2.includes('ovo'))    ewLocalImg = 'ewallet/ovo-light.jpg';
+      else if (nm2.includes('dana'))   ewLocalImg = 'ewallet/dana-light.jpg';
+      else if (nm2.includes('linkaja'))ewLocalImg = 'ewallet/linkaja-light.jpg';
+      
+      const sheetInit = (acc.name.replace(/[^a-zA-Z0-9]/g,'').slice(0,2)||'?').toUpperCase();
+      const logoHtml = isEwalletAcc && ewLocalImg
+        ? `<img src="${ewLocalImg}" style="width:100%;height:100%;object-fit:contain;border-radius:14px;mix-blend-mode:multiply;" onerror="this.style.display='none'">
+           <div class="acc-sheet-ava-fb" style="display:none">${sheetInit}</div>`
+        : getLogoHtml(acc.name, b, '', 'acc-sheet-ava-fb', 'width:100%;height:100%;object-fit:cover;border-radius:14px;', true);
+      
+      // Warna background avatar: e-wallet pakai putih agar logo terlihat, bank pakai gradient brand
+      const sheetAvaBg = isEwalletAcc && ewLocalImg
+        ? 'background:#ffffff'
+        : `background:linear-gradient(135deg,${c1},${c2})`;
       el('accSheet').innerHTML = `
     <div class="acc-sheet-handle"></div>
     <div class="acc-sheet-banner">
       <div class="acc-sheet-top">
-        <div class="acc-sheet-ava" style="background:linear-gradient(135deg,${c1},${c2})">${logoHtml}</div>
+        <div class="acc-sheet-ava" style="${sheetAvaBg}">${logoHtml}</div>
         <div style="flex:1;min-width:0">
           <div class="acc-sheet-name" style="text-transform:uppercase">${esc(acc.name)}</div>
           <div class="acc-sheet-bal${isNeg ? ' neg' : ''}">${fCur(acc.balance)}</div>
