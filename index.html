@@ -6694,20 +6694,25 @@
         
         if (isEwallet) {
           const nm = acc.name.toLowerCase();
-          let cCls = '', ewImg = null;
+          let cCls = '', ewBase = null;
           
-          if (nm.includes('gopay'))                             { cCls = 'ec-gopay';  ewImg = 'ewallet/gopay-light.jpg'; }
-          else if (nm.includes('ovo'))                          { cCls = 'ec-ovo';    ewImg = 'ewallet/ovo-light.jpg'; }
-          else if (nm.includes('dana'))                         { cCls = 'ec-dana';   ewImg = 'ewallet/dana-light.jpg'; }
-          else if (nm.includes('linkaja'))                      { cCls = 'ec-linkaja';ewImg = 'ewallet/linkaja-light.jpg'; }
-          else if (nm.includes('shopee') || nm.includes('spay')){ cCls = 'ec-spay';   ewImg = null; }
+          if (nm.includes('gopay'))                             { cCls = 'ec-gopay';  ewBase = 'ewallet/gopay'; }
+          else if (nm.includes('ovo'))                          { cCls = 'ec-ovo';    ewBase = 'ewallet/ovo'; }
+          else if (nm.includes('dana'))                         { cCls = 'ec-dana';   ewBase = 'ewallet/dana'; }
+          else if (nm.includes('linkaja'))                      { cCls = 'ec-linkaja';ewBase = 'ewallet/linkaja'; }
+          else if (nm.includes('shopee') || nm.includes('spay')){ cCls = 'ec-spay';   ewBase = null; }
+          
+          const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+          // Light theme: *-light.jpg (logo berwarna + bg putih) → multiply buat bg putih hilang
+          // Dark theme:  *-dark.jpg  (logo putih  + bg brand)  → screen buat bg gelap hilang
+          const ewImg    = ewBase ? ewBase + (isDark ? '-dark.jpg' : '-light.jpg') : null;
+          const ewBlend  = isDark ? 'screen' : 'multiply';
           
           const init = (acc.name.replace(/[^a-zA-Z0-9]/g,'').slice(0,3)||'?').toUpperCase();
-          // Logo langsung di atas kartu — mix-blend-mode:multiply membuat bg putih transparan
           const logoEl = ewImg
             ? `<img src="${ewImg}" alt="${esc(acc.name)}"
-                 style="height:44px;max-width:100px;object-fit:contain;display:block;mix-blend-mode:multiply;"
-                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                 style="height:44px;max-width:100px;object-fit:contain;display:block;mix-blend-mode:${ewBlend};"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
                <span style="display:none;font-size:0.8rem;font-weight:800;color:rgba(255,255,255,0.9);letter-spacing:.06em">${init}</span>`
             : `<span style="font-size:0.8rem;font-weight:800;color:rgba(255,255,255,0.9);letter-spacing:.06em">${init}</span>`;
           
@@ -8467,25 +8472,29 @@
       const monIn = monTx.filter(t => (t.type === 'income' && t.account_id === accSheetId) || (t.type === 'transfer' && t.to_acc_id === accSheetId)).reduce((s, t) => s + t.amount, 0);
       const monOut = monTx.filter(t => (t.type === 'expense' && t.account_id === accSheetId) || (t.type === 'transfer' && t.account_id === accSheetId && t.to_acc_id !== accSheetId)).reduce((s, t) => s + t.amount, 0);
       const monOpts = months.length ? months.map(m => `<option value="${m}"${m === accSheetMon ? ' selected' : ''}>${m}</option>`).join('') : `<option value="${thisMon()}">${thisMon()}</option>`;
-      // Untuk e-wallet: gunakan gambar lokal + favicon Google sebagai fallback
       const isEwalletAcc = b && b.isWallet || /ovo|gopay|dana|linkaja|shopeepay|spay|wallet/i.test(acc.name);
       const nm2 = acc.name.toLowerCase();
-      let ewLocalImg = null;
-      if (nm2.includes('gopay'))  ewLocalImg = 'ewallet/gopay-light.jpg';
-      else if (nm2.includes('ovo'))    ewLocalImg = 'ewallet/ovo-light.jpg';
-      else if (nm2.includes('dana'))   ewLocalImg = 'ewallet/dana-light.jpg';
-      else if (nm2.includes('linkaja'))ewLocalImg = 'ewallet/linkaja-light.jpg';
+      let ewBase2 = null;
+      if (nm2.includes('gopay'))   ewBase2 = 'ewallet/gopay';
+      else if (nm2.includes('ovo'))     ewBase2 = 'ewallet/ovo';
+      else if (nm2.includes('dana'))    ewBase2 = 'ewallet/dana';
+      else if (nm2.includes('linkaja')) ewBase2 = 'ewallet/linkaja';
+      
+      const isDarkSheet = document.documentElement.getAttribute('data-theme') === 'dark';
+      // Light: background putih + *-light.jpg + multiply | Dark: gradient brand + *-dark.jpg + screen
+      const ewSheetImg   = ewBase2 ? ewBase2 + (isDarkSheet ? '-dark.jpg' : '-light.jpg') : null;
+      const ewSheetBlend = isDarkSheet ? 'screen' : 'multiply';
+      const sheetAvaBg   = (isEwalletAcc && ewSheetImg)
+        ? (isDarkSheet ? `background:linear-gradient(135deg,${c1},${c2})` : 'background:#fff')
+        : `background:linear-gradient(135deg,${c1},${c2})`;
       
       const sheetInit = (acc.name.replace(/[^a-zA-Z0-9]/g,'').slice(0,2)||'?').toUpperCase();
-      const logoHtml = isEwalletAcc && ewLocalImg
-        ? `<img src="${ewLocalImg}" style="width:100%;height:100%;object-fit:contain;border-radius:14px;mix-blend-mode:multiply;" onerror="this.style.display='none'">
+      const logoHtml = (isEwalletAcc && ewSheetImg)
+        ? `<img src="${ewSheetImg}" style="width:100%;height:100%;object-fit:contain;border-radius:14px;mix-blend-mode:${ewSheetBlend};" onerror="this.style.display='none'">
            <div class="acc-sheet-ava-fb" style="display:none">${sheetInit}</div>`
         : getLogoHtml(acc.name, b, '', 'acc-sheet-ava-fb', 'width:100%;height:100%;object-fit:cover;border-radius:14px;', true);
       
-      // Warna background avatar: e-wallet pakai putih agar logo terlihat, bank pakai gradient brand
-      const sheetAvaBg = isEwalletAcc && ewLocalImg
-        ? 'background:#ffffff'
-        : `background:linear-gradient(135deg,${c1},${c2})`;
+      // Warna background avatar disesuaikan tema
       el('accSheet').innerHTML = `
     <div class="acc-sheet-handle"></div>
     <div class="acc-sheet-banner">
