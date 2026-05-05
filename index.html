@@ -6694,27 +6694,23 @@
         
         if (isEwallet) {
           const nm = acc.name.toLowerCase();
-          let cCls = '', ewLightImg = null, ewDarkImg = null;
+          let cCls = '', ewDarkImg = null;
           
-          if (nm.includes('gopay'))                              { cCls='ec-gopay';  ewLightImg='ewallet/gopay-light.jpg';         ewDarkImg='ewallet/gopay-dark.jpg'; }
-          else if (nm.includes('ovo'))                           { cCls='ec-ovo';    ewLightImg='ewallet/ovo-light.jpg';          ewDarkImg='ewallet/ovo-dark.jpg'; }
-          else if (nm.includes('dana'))                          { cCls='ec-dana';   ewLightImg='ewallet/dana-light.jpg';         ewDarkImg='ewallet/dana-dark.jpg'; }
-          else if (nm.includes('linkaja'))                       { cCls='ec-linkaja';ewLightImg='ewallet/linkaja-light1.jpg';     ewDarkImg='ewallet/linkaja-dark.jpg'; }
-          else if (nm.includes('shopee') || nm.includes('spay')) { cCls='ec-spay';   ewLightImg='ewallet/shopeepay-light.png';   ewDarkImg='ewallet/shopeepay-dark.jpg'; }
+          if (nm.includes('gopay'))                              { cCls='ec-gopay';  ewDarkImg='ewallet/gopay-dark.jpg'; }
+          else if (nm.includes('ovo'))                           { cCls='ec-ovo';    ewDarkImg='ewallet/ovo-dark.jpg'; }
+          else if (nm.includes('dana'))                          { cCls='ec-dana';   ewDarkImg='ewallet/dana-dark.jpg'; }
+          else if (nm.includes('linkaja'))                       { cCls='ec-linkaja';ewDarkImg='ewallet/linkaja-dark.jpg'; }
+          else if (nm.includes('shopee') || nm.includes('spay')) { cCls='ec-spay';   ewDarkImg='ewallet/shopeepay-dark.jpg'; }
           
-          const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-          // Light theme: *-light (logo berwarna + bg putih/transparan) → multiply
-          // Dark theme:  *-dark  (logo putih + bg brand)               → screen
-          const ewImg   = isDark ? ewDarkImg : ewLightImg;
-          const ewBlend = isDark ? 'screen' : 'multiply';
+          // Selalu pakai *-dark.jpg sebagai badge icon — brand-color bg langsung,
+          // tanpa mix-blend-mode (menghindari kotak putih/logo invisible di kedua tema)
+          const ewImg = ewDarkImg;
           
           const init = (acc.name.replace(/[^a-zA-Z0-9]/g,'').slice(0,3)||'?').toUpperCase();
-          // object-fit:contain + mix-blend-mode: konsisten untuk semua rasio gambar
-          // multiply (light): bg putih/terang jadi transparan
-          // screen (dark):   bg gelap jadi transparan, logo putih tetap terlihat
+          // Badge icon: border-radius 8px, tanpa blend mode
           const logoEl = ewImg
             ? `<img src="${ewImg}" alt="${esc(acc.name)}"
-                 style="max-height:42px;max-width:96px;object-fit:contain;display:block;mix-blend-mode:${ewBlend};"
+                 style="max-height:42px;max-width:88px;object-fit:contain;display:block;border-radius:8px;"
                  onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
                <span style="display:none;font-size:0.8rem;font-weight:800;color:rgba(255,255,255,0.9);letter-spacing:.06em">${init}</span>`
             : `<span style="font-size:0.8rem;font-weight:800;color:rgba(255,255,255,0.9);letter-spacing:.06em">${init}</span>`;
@@ -8477,23 +8473,22 @@
       const monOpts = months.length ? months.map(m => `<option value="${m}"${m === accSheetMon ? ' selected' : ''}>${m}</option>`).join('') : `<option value="${thisMon()}">${thisMon()}</option>`;
       const isEwalletAcc = b && b.isWallet || /ovo|gopay|dana|linkaja|shopeepay|spay|wallet/i.test(acc.name);
       const nm2 = acc.name.toLowerCase();
-      let ewBase2 = null, ewLightImg2 = null, ewDarkImg2 = null;
-      if (nm2.includes('gopay'))                              { ewLightImg2='ewallet/gopay-light.jpg';       ewDarkImg2='ewallet/gopay-dark.jpg'; }
-      else if (nm2.includes('ovo'))                           { ewLightImg2='ewallet/ovo-light.jpg';        ewDarkImg2='ewallet/ovo-dark.jpg'; }
-      else if (nm2.includes('dana'))                          { ewLightImg2='ewallet/dana-light.jpg';       ewDarkImg2='ewallet/dana-dark.jpg'; }
-      else if (nm2.includes('linkaja'))                       { ewLightImg2='ewallet/linkaja-light1.jpg';   ewDarkImg2='ewallet/linkaja-dark.jpg'; }
-      else if (nm2.includes('shopee') || nm2.includes('spay')){ ewLightImg2='ewallet/shopeepay-light.png';  ewDarkImg2='ewallet/shopeepay-dark.jpg'; }
+      let ewDarkImg2 = null;
+      if (nm2.includes('gopay'))                               ewDarkImg2 = 'ewallet/gopay-dark.jpg';
+      else if (nm2.includes('ovo'))                            ewDarkImg2 = 'ewallet/ovo-dark.jpg';
+      else if (nm2.includes('dana'))                           ewDarkImg2 = 'ewallet/dana-dark.jpg';
+      else if (nm2.includes('linkaja'))                        ewDarkImg2 = 'ewallet/linkaja-dark.jpg';
+      else if (nm2.includes('shopee') || nm2.includes('spay')) ewDarkImg2 = 'ewallet/shopeepay-dark.jpg';
       
-      const isDarkSheet = document.documentElement.getAttribute('data-theme') === 'dark';
-      const ewSheetImg   = isDarkSheet ? ewDarkImg2 : ewLightImg2;
-      const ewSheetBlend = isDarkSheet ? 'screen' : 'multiply';
-      const sheetAvaBg   = (isEwalletAcc && ewSheetImg)
-        ? (isDarkSheet ? `background:linear-gradient(135deg,${c1},${c2})` : 'background:#fff')
+      // Selalu pakai *-dark.jpg: badge icon berwarna, tanpa blend mode
+      const ewSheetImg  = ewDarkImg2;
+      const sheetAvaBg  = (isEwalletAcc && ewSheetImg)
+        ? `background:linear-gradient(135deg,${c1},${c2})`  // gradient brand tetap sebagai background
         : `background:linear-gradient(135deg,${c1},${c2})`;
       
       const sheetInit = (acc.name.replace(/[^a-zA-Z0-9]/g,'').slice(0,2)||'?').toUpperCase();
       const logoHtml = (isEwalletAcc && ewSheetImg)
-        ? `<img src="${ewSheetImg}" style="width:100%;height:100%;object-fit:contain;border-radius:14px;mix-blend-mode:${ewSheetBlend};" onerror="this.style.display='none'">
+        ? `<img src="${ewSheetImg}" style="width:80%;height:80%;object-fit:contain;border-radius:10px;" onerror="this.style.display='none'">
            <div class="acc-sheet-ava-fb" style="display:none">${sheetInit}</div>`
         : getLogoHtml(acc.name, b, '', 'acc-sheet-ava-fb', 'width:100%;height:100%;object-fit:cover;border-radius:14px;', true);
       
