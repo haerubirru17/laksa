@@ -6694,19 +6694,19 @@
         
         if (isEwallet) {
           const nm = acc.name.toLowerCase();
-          let cCls = '', ewBase = null;
+          let cCls = '', ewLightImg = null, ewDarkImg = null;
           
-          if (nm.includes('gopay'))                             { cCls = 'ec-gopay';  ewBase = 'ewallet/gopay'; }
-          else if (nm.includes('ovo'))                          { cCls = 'ec-ovo';    ewBase = 'ewallet/ovo'; }
-          else if (nm.includes('dana'))                         { cCls = 'ec-dana';   ewBase = 'ewallet/dana'; }
-          else if (nm.includes('linkaja'))                      { cCls = 'ec-linkaja';ewBase = 'ewallet/linkaja'; }
-          else if (nm.includes('shopee') || nm.includes('spay')){ cCls = 'ec-spay';   ewBase = null; }
+          if (nm.includes('gopay'))                              { cCls='ec-gopay';  ewLightImg='ewallet/gopay-light.jpg';         ewDarkImg='ewallet/gopay-dark.jpg'; }
+          else if (nm.includes('ovo'))                           { cCls='ec-ovo';    ewLightImg='ewallet/ovo-light.jpg';          ewDarkImg='ewallet/ovo-dark.jpg'; }
+          else if (nm.includes('dana'))                          { cCls='ec-dana';   ewLightImg='ewallet/dana-light.jpg';         ewDarkImg='ewallet/dana-dark.jpg'; }
+          else if (nm.includes('linkaja'))                       { cCls='ec-linkaja';ewLightImg='ewallet/linkaja-light1.jpg';     ewDarkImg='ewallet/linkaja-dark.jpg'; }
+          else if (nm.includes('shopee') || nm.includes('spay')) { cCls='ec-spay';   ewLightImg='ewallet/shopeepay-light.png';   ewDarkImg='ewallet/shopeepay-dark.jpg'; }
           
           const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-          // Light theme: *-light.jpg (logo berwarna + bg putih) → multiply buat bg putih hilang
-          // Dark theme:  *-dark.jpg  (logo putih  + bg brand)  → screen buat bg gelap hilang
-          const ewImg    = ewBase ? ewBase + (isDark ? '-dark.jpg' : '-light.jpg') : null;
-          const ewBlend  = isDark ? 'screen' : 'multiply';
+          // Light theme: *-light (logo berwarna + bg putih/transparan) → multiply
+          // Dark theme:  *-dark  (logo putih + bg brand)               → screen
+          const ewImg   = isDark ? ewDarkImg : ewLightImg;
+          const ewBlend = isDark ? 'screen' : 'multiply';
           
           const init = (acc.name.replace(/[^a-zA-Z0-9]/g,'').slice(0,3)||'?').toUpperCase();
           // Transparent clip container — zoom 150% utk potong white padding JPG, overflow:hidden crop sisanya
@@ -8476,15 +8476,15 @@
       const monOpts = months.length ? months.map(m => `<option value="${m}"${m === accSheetMon ? ' selected' : ''}>${m}</option>`).join('') : `<option value="${thisMon()}">${thisMon()}</option>`;
       const isEwalletAcc = b && b.isWallet || /ovo|gopay|dana|linkaja|shopeepay|spay|wallet/i.test(acc.name);
       const nm2 = acc.name.toLowerCase();
-      let ewBase2 = null;
-      if (nm2.includes('gopay'))   ewBase2 = 'ewallet/gopay';
-      else if (nm2.includes('ovo'))     ewBase2 = 'ewallet/ovo';
-      else if (nm2.includes('dana'))    ewBase2 = 'ewallet/dana';
-      else if (nm2.includes('linkaja')) ewBase2 = 'ewallet/linkaja';
+      let ewBase2 = null, ewLightImg2 = null, ewDarkImg2 = null;
+      if (nm2.includes('gopay'))                              { ewLightImg2='ewallet/gopay-light.jpg';       ewDarkImg2='ewallet/gopay-dark.jpg'; }
+      else if (nm2.includes('ovo'))                           { ewLightImg2='ewallet/ovo-light.jpg';        ewDarkImg2='ewallet/ovo-dark.jpg'; }
+      else if (nm2.includes('dana'))                          { ewLightImg2='ewallet/dana-light.jpg';       ewDarkImg2='ewallet/dana-dark.jpg'; }
+      else if (nm2.includes('linkaja'))                       { ewLightImg2='ewallet/linkaja-light1.jpg';   ewDarkImg2='ewallet/linkaja-dark.jpg'; }
+      else if (nm2.includes('shopee') || nm2.includes('spay')){ ewLightImg2='ewallet/shopeepay-light.png';  ewDarkImg2='ewallet/shopeepay-dark.jpg'; }
       
       const isDarkSheet = document.documentElement.getAttribute('data-theme') === 'dark';
-      // Light: background putih + *-light.jpg + multiply | Dark: gradient brand + *-dark.jpg + screen
-      const ewSheetImg   = ewBase2 ? ewBase2 + (isDarkSheet ? '-dark.jpg' : '-light.jpg') : null;
+      const ewSheetImg   = isDarkSheet ? ewDarkImg2 : ewLightImg2;
       const ewSheetBlend = isDarkSheet ? 'screen' : 'multiply';
       const sheetAvaBg   = (isEwalletAcc && ewSheetImg)
         ? (isDarkSheet ? `background:linear-gradient(135deg,${c1},${c2})` : 'background:#fff')
@@ -8769,4 +8769,3 @@
 </body>
 
 </html>
-
