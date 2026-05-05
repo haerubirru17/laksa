@@ -5037,17 +5037,17 @@
     .bill-amount { font-family: 'Inter', sans-serif; font-size: 1.125rem; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; pointer-events:none; }
     /* E-Wallet Cards */
     .ew-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; color: var(--ink3); margin-bottom: 10px; }
-    .ecard { width: 158px; height: 90px; border-radius: 14px; padding: 11px 13px; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0; cursor: pointer; transition: transform 0.15s ease; background: var(--gs-3); border: 1px solid var(--gs-border); }
-    .ecard:hover { transform: translateY(-2px); }
+    .ecard { width: 220px; height: 130px; border-radius: 18px; padding: 14px 16px; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0; cursor: pointer; transition: transform 0.18s ease, box-shadow 0.18s ease; background: var(--gs-3); border: 1px solid var(--gs-border); }
+    .ecard:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.22); }
     .ecard .blob { position: absolute; border-radius: 50%; background: white; pointer-events: none; }
-    .ecard .b1 { width: 80px; height: 80px; opacity: 0.1; bottom: -28px; right: -16px; }
-    .ecard .b2 { width: 44px; height: 44px; opacity: 0.07; top: -12px; right: 28px; }
+    .ecard .b1 { width: 120px; height: 120px; opacity: 0.1; bottom: -40px; right: -22px; }
+    .ecard .b2 { width: 64px; height: 64px; opacity: 0.07; top: -18px; right: 38px; }
     .ecard-top { display: flex; justify-content: flex-end; align-items: center; position: relative; z-index: 1; }
     .ecard-bottom { position: relative; z-index: 1; }
-    .ecard-lbl { font-size: 7.5px; font-weight: 500; letter-spacing: 0.08em; color: rgba(255,255,255,0.6); margin-bottom: 2px; text-transform: uppercase; }
-    .ecard-saldo { font-size: 15px; font-weight: 700; color: white; line-height: 1; }
-    .ecard-pct { font-size: 8px; font-weight: 600; color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.15); border-radius: 4px; padding: 1px 5px; margin-top: 4px; display: inline-block; }
-    .ecard .logo-box { height: 22px; display: flex; align-items: center; justify-content: flex-end; }
+    .ecard-lbl { font-size: 9px; font-weight: 600; letter-spacing: 0.10em; color: rgba(255,255,255,0.65); margin-bottom: 3px; text-transform: uppercase; }
+    .ecard-saldo { font-size: 18px; font-weight: 700; color: white; line-height: 1; letter-spacing: -0.02em; }
+    .ecard-pct { font-size: 9px; font-weight: 600; color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.18); border-radius: 5px; padding: 2px 7px; margin-top: 5px; display: inline-block; }
+    .ecard .logo-box { height: 36px; display: flex; align-items: center; justify-content: flex-end; }
     .ecard.ec-ovo { background: #6247AA; }
     .ecard.ec-dana { background: #118EEA; }
     .ecard.ec-gopay { background: #00AED6; }
@@ -5061,7 +5061,7 @@
     .ecard.ec-add { display: flex; align-items: center; justify-content: center; background: transparent; border: 1.5px dashed var(--gs-border); color: var(--ink2); flex-direction: column; gap: 6px; }
     .ecard.ec-add:hover { border-color: var(--accent); color: var(--accent); background: var(--gs-1); }
     .ecard.ec-add svg { opacity: 0.7; }
-    .ecard.ec-add span { font-size: 0.8rem; font-weight: 600; }
+    .ecard.ec-add span { font-size: 0.85rem; font-weight: 600; }
 </style>
 </head>
 
@@ -6703,7 +6703,7 @@
           
           const init = (acc.name.replace(/[^a-zA-Z0-9]/g,'').slice(0,3)||'?').toUpperCase();
           const logoBox = ewImg
-            ? `<img src="${ewImg}" alt="${esc(acc.name)}" style="height:22px;max-width:72px;object-fit:contain;display:block;filter:brightness(1) drop-shadow(0 0 0 transparent)" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+            ? `<img src="${ewImg}" alt="${esc(acc.name)}" style="height:32px;max-width:90px;object-fit:contain;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
                <span style="display:none;font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.9);letter-spacing:.05em">${init}</span>`
             : `<span style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.9);letter-spacing:.05em">${init}</span>`;
           
