@@ -1629,12 +1629,12 @@
       display: none
     }
 
-    /* Desktop: wrap into grid, no scroll */
+    /* Desktop: keep horizontal scroll, arrows control navigation */
     @media(min-width:1024px) {
       .accs-scroll {
-        overflow-x: visible;
-        flex-wrap: wrap;
-        scroll-snap-type: none;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        scroll-snap-type: x mandatory;
         padding: .3rem 0 .8rem
       }
     }
@@ -6694,19 +6694,23 @@
         
         if (isEwallet) {
           const nm = acc.name.toLowerCase();
-          let cCls = '';
-          if (nm.includes('ovo')) cCls = 'ec-ovo';
-          else if (nm.includes('dana')) cCls = 'ec-dana';
-          else if (nm.includes('gopay')) cCls = 'ec-gopay';
-          else if (nm.includes('linkaja')) cCls = 'ec-linkaja';
-          else if (nm.includes('shopee') || nm.includes('spay')) cCls = 'ec-spay';
+          let cCls = '', ewImg = null;
+          if (nm.includes('ovo'))       { cCls = 'ec-ovo';    ewImg = 'ewallet/ovo-dark.jpg'; }
+          else if (nm.includes('dana'))     { cCls = 'ec-dana';   ewImg = 'ewallet/dana-dark.jpg'; }
+          else if (nm.includes('gopay'))    { cCls = 'ec-gopay';  ewImg = 'ewallet/gopay-dark.jpg'; }
+          else if (nm.includes('linkaja'))  { cCls = 'ec-linkaja';ewImg = 'ewallet/linkaja-dark.jpg'; }
+          else if (nm.includes('shopee') || nm.includes('spay')) { cCls = 'ec-spay'; ewImg = null; }
           
-          let logoSvg = getLogoHtml(acc.name, b, '', '', 'width:100%;height:100%;object-fit:contain;border-radius:10px;');
+          const init = (acc.name.replace(/[^a-zA-Z0-9]/g,'').slice(0,3)||'?').toUpperCase();
+          const logoBox = ewImg
+            ? `<img src="${ewImg}" alt="${esc(acc.name)}" style="height:22px;max-width:72px;object-fit:contain;display:block;filter:brightness(1) drop-shadow(0 0 0 transparent)" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+               <span style="display:none;font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.9);letter-spacing:.05em">${init}</span>`
+            : `<span style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.9);letter-spacing:.05em">${init}</span>`;
           
           eHtml += `<div class="ecard ${cCls}" onclick="openAccDetail('${acc.id}')">
             <div class="blob b1"></div><div class="blob b2"></div>
             <div class="ecard-top">
-              <div class="logo-box" style="width:50px">${logoSvg}</div>
+              <div class="logo-box" style="height:22px;display:flex;align-items:center;justify-content:flex-end">${logoBox}</div>
             </div>
             <div class="ecard-bottom">
               <div class="ecard-lbl">${esc(acc.name)}</div>
@@ -6736,6 +6740,7 @@
       
       wrap.innerHTML = bHtml;
       eWrap.innerHTML = eHtml;
+      setTimeout(updateAccArrows, 50);
     }
 
     function renderRecent(txs) {
